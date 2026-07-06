@@ -23,7 +23,6 @@
 
 
         <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
-        <minio.version>8.3.6</minio.version>
         <easyexcel.version>3.3.2</easyexcel.version>
         <springdoc.version>2.1.0</springdoc.version>
         <fastjson.version>2.0.34</fastjson.version>
@@ -56,13 +55,6 @@
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
-            </dependency>
-
-            <!-- MinIO -->
-            <dependency>
-                <groupId>io.minio</groupId>
-                <artifactId>minio</artifactId>
-                <version>${minio.version}</version>
             </dependency>
 
             <!-- EasyExcel -->

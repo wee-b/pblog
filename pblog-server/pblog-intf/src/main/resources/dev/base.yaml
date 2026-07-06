@@ -42,11 +42,12 @@ spring:
       max-file-size: 10MB  # 单个文件大小限制
       max-request-size: 10MB  # 单次请求文件总大小限制
 
-minio:
-  endpoint: http://${bin.minio.host}:9000
-  access-key: ${bin.minio.access-key}
-  secret-key: ${bin.minio.secret-key}
-  bucket-name: ${bin.minio.bucket-name}
+aliyun:
+  oss:
+    endpoint: ${bin.aliyun.oss.endpoint}
+    access-key-id: ${bin.aliyun.oss.access-key-id}
+    access-key-secret: ${bin.aliyun.oss.access-key-secret}
+    bucket-name: ${bin.aliyun.oss.bucket-name}
 
 
 mybatis-plus:
