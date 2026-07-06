@@ -30,4 +30,10 @@ public class FileController {
       log.info("/file/uploadImage url={}", url);
       return ResponseResult.successData(url);
    }
+
+   @GetMapping("/signedUrl")
+   public ResponseResult<String> getSignedUrl(@RequestParam("objectKey") String objectKey){
+      String url = fileService.getSignedUrl(objectKey);
+      return ResponseResult.successData(url);
+   }
 }

@@ -21,7 +21,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -49,8 +51,8 @@ public class FileServiceImpl implements FileService {
 
     @Value("${aliyun.oss.bucket-name}")
     private String bucketName;
-    @Value("${aliyun.oss.endpoint}")
-    private String endpoint;
+    @Value("${aliyun.oss.url-expire-minutes:30}")
+    private int urlExpireMinutes;
 
     @Autowired
     private OSS ossClient;
@@ -75,7 +77,7 @@ public class FileServiceImpl implements FileService {
             uploadToOss(fileName, processedStream, file.getContentType());
 
             // 5. 生成并返回访问URL
-            return generateImageUrl(fileName);
+            return generateSignedUrl(fileName);
 
         } catch (Exception e) {
             log.error("文章图片上传失败", e);
@@ -109,7 +111,7 @@ public class FileServiceImpl implements FileService {
             userMapper.update(null, lambdaUpdateWrapper);
 
             // 6. 生成并返回头像访问URL
-            return generateImageUrl(fileName);
+            return generateSignedUrl(fileName);
 
         } catch (Exception e) {
             log.error("头像上传失败", e);
@@ -278,15 +280,24 @@ public class FileServiceImpl implements FileService {
     }
 
     /**
-     * 通用生成图片访问URL
+     * 根据 objectKey 生成带时效的签名URL（供外部调用，如刷新头像链接）
      */
-    private String generateImageUrl(String fileName) {
-        if (fileName == null || fileName.trim().isEmpty()) {
+    @Override
+    public String getSignedUrl(String objectKey) {
+        return generateSignedUrl(objectKey);
+    }
+
+    /**
+     * 生成带时效的OSS签名URL
+     */
+    private String generateSignedUrl(String objectKey) {
+        if (objectKey == null || objectKey.trim().isEmpty()) {
             throw new IllegalArgumentException("图片文件名不能为空");
         }
-        String normalizedFileName = fileName.startsWith("/") ? fileName.substring(1) : fileName;
-        // 阿里云OSS URL格式：https://{bucketName}.{endpoint-host}/{objectKey}
-        String endpointHost = endpoint.replaceFirst("^https?://", "");
-        return "https://" + bucketName + "." + endpointHost + "/" + normalizedFileName;
+        String normalizedKey = objectKey.startsWith("/") ? objectKey.substring(1) : objectKey;
+        Calendar expiration = Calendar.getInstance();
+        expiration.add(Calendar.MINUTE, urlExpireMinutes);
+        URL signedUrl = ossClient.generatePresignedUrl(bucketName, normalizedKey, expiration.getTime());
+        return signedUrl.toString();
     }
 }

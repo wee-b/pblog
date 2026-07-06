@@ -48,6 +48,7 @@ aliyun:
     access-key-id: ${bin.aliyun.oss.access-key-id}
     access-key-secret: ${bin.aliyun.oss.access-key-secret}
     bucket-name: ${bin.aliyun.oss.bucket-name}
+    url-expire-minutes: 30  # 签名URL有效期（分钟）
 
 
 mybatis-plus:

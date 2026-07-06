@@ -8,4 +8,6 @@ public interface FileService {
 
     String uploadImage(MultipartFile file);
 
+    String getSignedUrl(String objectKey);
+
 }
