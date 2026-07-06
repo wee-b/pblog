@@ -107,13 +107,6 @@
                 <scope>runtime</scope>
             </dependency>
 
-            <!-- Elasticsearch -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
-                <version>3.1.0</version>
-            </dependency>
-
             <!-- 阿里云OSS -->
             <dependency>
                 <groupId>com.aliyun.oss</groupId>
@@ -160,20 +153,6 @@
                 <groupId>p6spy</groupId>
                 <artifactId>p6spy</artifactId>
                 <version>3.9.1</version>
-            </dependency>
-
-            <!-- Canal -->
-            <dependency>
-                <groupId>com.alibaba.otter</groupId>
-                <artifactId>canal.client</artifactId>
-                <version>1.1.7</version>
-            </dependency>
-
-            <!-- canal protocol (必须) -->
-            <dependency>
-                <groupId>com.alibaba.otter</groupId>
-                <artifactId>canal.protocol</artifactId>
-                <version>1.1.7</version>
             </dependency>
 
         </dependencies>

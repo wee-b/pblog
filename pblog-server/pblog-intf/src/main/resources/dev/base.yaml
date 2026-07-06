@@ -42,29 +42,6 @@ spring:
       max-file-size: 10MB  # 单个文件大小限制
       max-request-size: 10MB  # 单次请求文件总大小限制
 
-  # Elasticsearch 配置
-  elasticsearch:
-    uris: http://${bin.elasticsearch.host}:${bin.elasticsearch.port}
-    username: ${bin.elasticsearch.username}
-    password: ${bin.elasticsearch.password}
-    connection-timeout: 10s
-    socket-timeout: 30s
-
-  canal:
-    # Canal服务地址（虚拟机IP + Canal默认端口）
-    server: ${bin.canal.host}:${bin.canal.port}
-    # Canal实例名（默认example，和你配置的instance.properties一致）
-    destination: example
-    filter: ${bin.canal.filter}
-    batch-size: 1000
-    retry-interval: 5000
-
-# 日志配置（可选，方便看 ES 操作日志）
-logging:
-  level:
-    org.springframework.data.elasticsearch: DEBUG
-
-
 minio:
   endpoint: http://${bin.minio.host}:9000
   access-key: ${bin.minio.access-key}
