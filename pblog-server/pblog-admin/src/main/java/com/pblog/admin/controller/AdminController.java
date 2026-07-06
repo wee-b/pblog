@@ -1,0 +1,77 @@
+package com.pblog.admin.controller;
+
+import com.pblog.admin.service.AdminService;
+import com.pblog.common.domain.dto.PageQueryDTO;
+import com.pblog.common.domain.dto.RegisterDTO;
+import com.pblog.common.domain.dto.login.PasswordLoginDTO;
+import com.pblog.common.domain.entity.User;
+import com.pblog.common.domain.result.ResponseResult;
+import com.pblog.common.domain.vo.UserAdminInfoVO;
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@Slf4j
+@RequestMapping("/admin")
+@RestController
+public class AdminController {
+
+    @Autowired
+    private AdminService adminService;
+
+    @PostMapping("/passwordLogin")
+    public ResponseResult<Map<String,String>> login(@RequestBody PasswordLoginDTO passwordLoginDTO) {
+        log.info("管理员登录请求:{}", passwordLoginDTO);
+        Map<String,String> res = adminService.passwordLogin(passwordLoginDTO);
+        return ResponseResult.success(res);
+    }
+
+    @PostMapping("/register")
+    public ResponseResult<Map<String, String>> register(@RequestBody RegisterDTO registerDTO){
+        Map<String, String> res = adminService.register(registerDTO);
+        return ResponseResult.success(res);
+    }
+
+    @PostMapping("/logout")
+    public ResponseResult<String> logout() {
+        log.info("管理员退出请求");
+        adminService.logout();
+        return ResponseResult.success();
+    }
+
+    @PostMapping("/status")
+    public ResponseResult edit(@RequestParam String username){
+        log.info("启用/禁用账号请求:{}" ,username);
+        adminService.edit(username);
+        return ResponseResult.success();
+    }
+
+
+    // TODO 用户管理待完成
+
+    @GetMapping("/getUserAllInfo")
+    public ResponseResult<User> getUserAllInfo(@RequestParam String username) {
+        log.info("获取用户详细信息请求");
+        User res = adminService.getUserAllInfo(username);
+        return ResponseResult.success(res);
+    }
+
+    @GetMapping("/UserPageQuery")
+    public ResponseResult<List<UserAdminInfoVO>> UserPageQuery(@Valid @RequestBody PageQueryDTO pageQueryDTO) {
+        log.info("用户信息分页查询请求");
+        List<UserAdminInfoVO> res = adminService.UserPageQuery(pageQueryDTO);
+        return ResponseResult.success(res);
+    }
+
+//    @PutMapping("/updateInfo")
+//    public ResponseResult updatePerson(@RequestBody AdminRegisterDTO adminRegisterDTO) {
+//        log.info("管理员更新信息请求");
+//        adminService.updatePerson(adminRegisterDTO);
+//        return ResponseResult.success();
+//    }
+
+}

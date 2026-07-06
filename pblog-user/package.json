@@ -1,0 +1,42 @@
+{
+  "name": "pblog-user",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "@wangeditor/editor-for-vue": "^5.1.12",
+    "animate.css": "^4.1.1",
+    "axios": "^1.13.2",
+    "chart.js": "^4.5.0",
+    "dayjs": "^1.11.19",
+    "echarts": "^5.6.0",
+    "element-plus": "^2.10.7",
+    "highlight.js": "^11.11.1",
+    "markdown-it": "^14.1.0",
+    "marked": "^16.1.2",
+    "md-editor-v3": "^6.2.0",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.18",
+    "vue-echarts": "^7.0.3",
+    "vue-router": "^4.5.1",
+    "vue3-markdown-it": "^1.0.10"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vitejs/plugin-vue-jsx": "^5.0.1",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.12",
+    "vite": "^7.0.6",
+    "vite-plugin-vue-devtools": "^8.0.0"
+  }
+}

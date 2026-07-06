@@ -1,0 +1,35 @@
+package com.pblog.common.domain.entity.rabc;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+
+/**
+ * 角色和菜单关联表
+ * @TableName pb_role_menu
+ */
+@TableName(value = "pb_role_menu")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class PbRoleMenu implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @TableId(type = IdType.AUTO)
+    private Integer id;
+
+    /**
+     * 角色ID
+     */
+    private Integer roleId;
+
+    /**
+     * 菜单ID
+     */
+    private Integer menuId;
+}

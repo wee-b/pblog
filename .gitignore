@@ -1,0 +1,63 @@
+# ===== Dependencies =====
+node_modules/
+
+# ===== Build Outputs =====
+dist/
+dist-ssr/
+target/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+!**/src/main/**/target/
+!**/src/test/**/target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# ===== Logs =====
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===== Testing & Coverage =====
+coverage/
+__screenshots__/
+/cypress/videos/
+/cypress/screenshots/
+
+# ===== OS Files =====
+.DS_Store
+*.local
+
+# ===== IDE & Editor =====
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.iws
+*.iml
+*.ipr
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.tsbuildinfo
+.eslintcache
+
+# ===== Java / Spring =====
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+
+# ===== Sensitive Config =====
+application-dev.yml

@@ -1,0 +1,17 @@
+package com.pblog.common.domain.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class EmailLoginDTO {
+    private String email;
+    private String password;
+    // 图形验证码相关
+    private String captchaUuid;
+    private String captchaCode;
+}
+
