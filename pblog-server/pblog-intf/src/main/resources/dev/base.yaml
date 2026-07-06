@@ -88,18 +88,6 @@ mybatis-plus:
 
 
 
-rocketmq:
-  name-server: ${bin.rocketmq.host}:${bin.rocketmq.port}
-  producer:
-    group: like-producer-group # 生产者组（自定义，保持唯一）
-    send-message-timeout: 3000 # 发送超时时间（毫秒）
-    retry-times-when-send-failed: 2 # 发送失败重试次数
-  consumer:
-    group: like-consumer-group # 消费者组（自定义，保持唯一）
-    consume-thread-max: 20 # 最大消费线程数
-
-
-
 
 
 # 自定义部分
@@ -110,5 +98,4 @@ login:
 
 like:
   delay:
-    time-level: 10 # RocketMQ延迟级别（2=5秒，可根据需求调整）
-    unique-key-prefix: "like:unique:" # 消息唯一Key前缀
+    minutes: 3  # 点赞同步延迟时间（分钟）

@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Slf4j
 @SpringBootApplication()
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.PropertySource;
         "com.pblog.user",          // 项目主包
         "com.pblog.common"   // 配置类所在包
 })
+@EnableScheduling
 public class PBlogApplication {
     public static void main(String[] args) {
         SpringApplication.run(PBlogApplication.class, args);

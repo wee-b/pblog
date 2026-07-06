@@ -3,7 +3,6 @@ package com.pblog.user.module.business.like.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.pblog.common.constant.RedisConstants;
-import com.pblog.common.constant.RocketMQConstants;
 import com.pblog.common.constant.TypeConstant;
 import com.pblog.common.domain.dto.LikeDTO;
 import com.pblog.common.domain.entity.Like;
@@ -14,21 +13,15 @@ import com.pblog.user.module.business.like.mapper.LikeMapper;
 import com.pblog.user.module.business.like.service.LikeService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.spring.core.RocketMQTemplate;
-import org.apache.rocketmq.spring.support.RocketMQHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -39,14 +32,10 @@ public class LikeServiceImpl implements LikeService {
     @Autowired
     private StringRedisTemplate stringRedisTemplate;
 
-    @Autowired
-    private RocketMQTemplate rocketMQTemplate;
-
     @Resource
     private LikeMapper likeMapper;
     @Resource
     private LikeCountMapper likeCountMapper;
-
 
     // Lua脚本
     private final RedisScript<Long> likeScript;
@@ -82,26 +71,22 @@ public class LikeServiceImpl implements LikeService {
         }
         log.info("更新缓存");
 
-        // 3. 生成唯一Key
-        String uniqueKey = RocketMQConstants.LIKE_UNIQUE_KEY_PREFIX + username + ":" + targetType + ":" + targetId;
+        // 3. 生成唯一Key，用于防抖判断
+        String uniqueKey = RedisConstants.LIKE_UNIQUE_KEY_PREFIX + username + ":" + targetType + ":" + targetId;
         String time = String.valueOf(System.currentTimeMillis());
         dto.setTimeStrap(time);
 
-        // 存入最新时间戳
+        // 存入最新时间戳（TTL与延迟同步周期一致）
         stringRedisTemplate.opsForValue().set(
                 uniqueKey,
                 time,
-                RocketMQConstants.LIKE_DELAY_TIME, TimeUnit.MINUTES
+                RedisConstants.LIKE_DELAY_MINUTES, TimeUnit.MINUTES
         );
 
-        // 4. 构建消息（修正：用字符串"DELAY"替代DELAY_TIME_LEVEL常量）
+        // 4. 将待同步数据加入Redis集合，由定时任务统一写库
         String msgBody = JSON.toJSONString(dto);
-        Message<String> message = MessageBuilder.withPayload(msgBody)
-                .setHeader(RocketMQHeaders.KEYS, uniqueKey)
-                .build();
-
-        // 5. 发送消息
-        sendRocketMQMessage(message);
+        stringRedisTemplate.opsForSet().add(RedisConstants.LIKE_PENDING_SET, msgBody);
+        log.info("点赞数据已加入待同步集合，用户：{}，目标：{}:{}", username, targetType, targetId);
     }
 
     private Long executeLuaScript(LikeDTO dto) {
@@ -113,25 +98,6 @@ public class LikeServiceImpl implements LikeService {
             return stringRedisTemplate.execute(likeScript, keys, dto.getUsername());
         } else {
             return stringRedisTemplate.execute(cancelLikeScript, keys, dto.getUsername());
-        }
-    }
-
-    private void sendRocketMQMessage(Message<String> message) {
-        try {
-            SendResult sendResult = rocketMQTemplate.syncSend(
-                    RocketMQConstants.LIKE_TOPIC,
-                    message,
-                    3000,
-                    RocketMQConstants.LIKE_DELAY_LEVEL
-            );
-            log.info("handleLikeRequest send time: {}", LocalDateTime.now());
-//            log.info("生产者发送了一条消息{}", sendResult);
-            // 核心修正：明确导入SendStatus枚举，并正确判断
-            if (sendResult.getSendStatus() != org.apache.rocketmq.client.producer.SendStatus.SEND_OK) {
-                throw new RuntimeException("发送点赞消息失败，SendStatus：" + sendResult.getSendStatus());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("发送RocketMQ消息异常", e);
         }
     }
 

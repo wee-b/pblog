@@ -26,4 +26,19 @@ public class RedisConstants {
 
     public static final Integer Like_Set_TTL = 60;  // 单位分钟
 
+    /**
+     * 点赞待同步集合Key（存储待同步的LikeDTO JSON）
+     */
+    public static final String LIKE_PENDING_SET = "like:pending";
+
+    /**
+     * 点赞消息唯一Key前缀（用于防抖判断）
+     */
+    public static final String LIKE_UNIQUE_KEY_PREFIX = "like:unique:";
+
+    /**
+     * 点赞同步延迟时间（分钟）
+     */
+    public static final int LIKE_DELAY_MINUTES = 3;
+
 }
