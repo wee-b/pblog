@@ -56,19 +56,19 @@
           </div>
         </template>
         <div class="metrics-container">
-          <div class="metric-item">
+          <div class="metric-item metric-item--coral">
             <div class="metric-value">{{ metrics.totalViews }}</div>
             <div class="metric-label">总访问量</div>
           </div>
-          <div class="metric-item">
+          <div class="metric-item metric-item--sky">
             <div class="metric-value">{{ metrics.avgQPS }}</div>
             <div class="metric-label">平均 QPS</div>
           </div>
-          <div class="metric-item">
+          <div class="metric-item metric-item--gold">
             <div class="metric-value">{{ metrics.totalArticles }}</div>
             <div class="metric-label">文章总数</div>
           </div>
-          <div class="metric-item">
+          <div class="metric-item metric-item--navy">
             <div class="metric-value">{{ metrics.totalComments }}</div>
             <div class="metric-label">评论总数</div>
           </div>
@@ -84,33 +84,14 @@ import * as echarts from 'echarts'
 import { getAllCategorys } from '@/apis/category.js'
 import { ElMessage } from 'element-plus'
 
-// 类型定义（TS环境可直接使用，JS环境可忽略类型声明）
-/**
- * @typedef {Object} CategoryItem
- * @property {number|string} id - 分类ID（唯一标识）
- * @property {string} categoryName - 分类名称
- * @property {number} articleCount - 该分类下的文章数量
- */
-
-/**
- * @typedef {Object} MetricsData
- * @property {number} totalViews - 总访问量
- * @property {string} avgQPS - 平均QPS
- * @property {number} totalArticles - 文章总数
- * @property {number} totalComments - 评论总数
- */
-
-// 响应式数据
 const chartReady = ref(false)
 const pieChart = ref(null)
 const barChart = ref(null)
 
-/** @type {import('vue').Ref<CategoryItem[]>} */
 const tags = ref([
   { id: 'loading', categoryName: '加载中...', articleCount: 0 }
 ])
 
-/** @type {import('vue').Ref<MetricsData>} */
 const metrics = ref({
   totalViews: 12458,
   avgQPS: '12.5',
@@ -118,36 +99,29 @@ const metrics = ref({
   totalComments: 342
 })
 
-// ECharts实例存储（用于销毁和resize）
 const pieInstance = ref(null)
 const barInstance = ref(null)
 
-// 计算标签类型（根据文章数量动态切换颜色）
 const getTagType = computed(() => (count) => {
   if (count > 30) return 'success'
   if (count > 15) return 'primary'
   return 'info'
 })
 
-// 计算标签大小（根据文章数量动态切换尺寸）
 const getTagSize = computed(() => (count) => {
   if (count > 30) return 'medium'
   return 'small'
 })
 
-/**
- * 获取热门标签数据
- */
 const getTags = async () => {
   try {
     let res = await getAllCategorys()
     res = res.data.data
-    // 数据校验：确保返回数组且包含必要字段
     if (Array.isArray(res)) {
       const validTags = res
           .filter(tag => tag.categoryName && (tag.articleCount || tag.articleCount === 0))
           .map(tag => ({
-            id: tag.id || `tag_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // 兜底ID
+            id: tag.id || `tag_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             categoryName: tag.categoryName,
             articleCount: tag.articleCount || 0
           }))
@@ -163,13 +137,9 @@ const getTags = async () => {
   }
 }
 
-/**
- * 初始化ECharts图表
- */
 const initCharts = () => {
   if (!pieChart.value || !barChart.value) return
 
-  // 饼图（文章分类）
   pieInstance.value = echarts.init(pieChart.value)
   pieInstance.value.setOption({
     tooltip: {
@@ -216,12 +186,11 @@ const initCharts = () => {
           { value: 8, name: '产品设计' },
           { value: 7, name: '其他' }
         ],
-        color: ['#67C23A', '#95D475', '#B3E19D', '#D1EDC4', '#E1F3D8', '#F0F9EB']
+        color: ['#F06292', '#FFD54F', '#4FC3F7', '#1A1A2E', '#B0BEC5', '#F8BBD0']
       }
     ]
   })
 
-  // 柱状图（访客统计）
   barInstance.value = echarts.init(barChart.value)
   barInstance.value.setOption({
     tooltip: {
@@ -254,7 +223,10 @@ const initCharts = () => {
         type: 'bar',
         data: [1200, 1500, 1800, 1350, 1650, 2100, 1950],
         itemStyle: {
-          color: '#67C23A',
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#F06292' },
+            { offset: 1, color: '#FFD54F' }
+          ]),
           borderRadius: [4, 4, 0, 0]
         },
         barWidth: '40%'
@@ -262,7 +234,6 @@ const initCharts = () => {
     ]
   })
 
-  // 适配暗黑模式（可选）
   const isDark = document.documentElement.classList.contains('dark')
   if (isDark) {
     [pieInstance.value, barInstance.value].forEach(chart => {
@@ -276,35 +247,26 @@ const initCharts = () => {
   }
 }
 
-/**
- * 窗口大小变化时调整图表尺寸
- */
 const handleResize = () => {
   pieInstance.value?.resize()
   barInstance.value?.resize()
 }
 
-// 组件生命周期钩子
 onMounted(async () => {
-  // 并行执行数据请求和DOM就绪等待，提升加载效率
   await Promise.all([getTags(), nextTick()])
   initCharts()
   chartReady.value = true
-  // 监听窗口大小变化
   window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
-  // 销毁图表实例，避免内存泄漏
   pieInstance.value?.dispose()
   barInstance.value?.dispose()
-  // 移除事件监听
   window.removeEventListener('resize', handleResize)
 })
 </script>
 
 <style scoped>
-/* 基础样式 */
 .section {
   padding: 24px;
 }
@@ -316,10 +278,11 @@ onUnmounted(() => {
 
 .section-title {
   font-size: 2rem;
-  color: #4a6b57;
+  color: var(--color-text-primary);
   margin-bottom: 10px;
   position: relative;
   display: inline-block;
+  font-weight: 800;
 }
 
 .section-title::after {
@@ -329,34 +292,33 @@ onUnmounted(() => {
   left: 50%;
   transform: translateX(-50%);
   width: 60px;
-  height: 3px;
-  background-color: #67c23a;
+  height: 4px;
+  background: linear-gradient(90deg, var(--geo-gold), var(--geo-coral));
+  border-radius: 2px;
 }
 
 .section-subtitle {
   font-size: 1rem;
-  color: #7f9c8d;
+  color: var(--color-text-muted);
   margin-top: 15px;
 }
 
 .stats-dashboard {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
-/* 网格布局 */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
 
-/* 卡片样式 */
 .stat-card {
   border: none;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -364,14 +326,14 @@ onUnmounted(() => {
 
 .card-header h3 {
   margin: 0;
-  color: #4a6b57;
+  color: var(--color-text-primary);
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .stat-card >>> .el-card__header {
   padding: 16px;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .stat-card >>> .el-card__body {
@@ -381,7 +343,6 @@ onUnmounted(() => {
   padding: 16px;
 }
 
-/* 图表容器 */
 .chart-container {
   height: 100%;
   min-height: 250px;
@@ -396,7 +357,6 @@ onUnmounted(() => {
   min-height: 250px;
 }
 
-/* 标签云样式 */
 .tags-cloud {
   display: flex;
   flex-wrap: wrap;
@@ -416,7 +376,7 @@ onUnmounted(() => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* 运营数据样式 */
+/* Geometric metric items */
 .metrics-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -426,36 +386,83 @@ onUnmounted(() => {
 .metric-item {
   text-align: center;
   padding: 20px 15px;
-  background-color: #f5f9f4;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
 }
 
 .metric-item:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
+}
+
+/* Color-coded metric cards */
+.metric-item--coral {
+  background: linear-gradient(135deg, rgba(240, 98, 146, 0.08), rgba(240, 98, 146, 0.02));
+}
+.metric-item--coral::before {
+  background: var(--geo-coral);
+}
+.metric-item--coral .metric-value {
+  color: var(--geo-coral-dark);
+}
+
+.metric-item--sky {
+  background: linear-gradient(135deg, rgba(79, 195, 247, 0.08), rgba(79, 195, 247, 0.02));
+}
+.metric-item--sky::before {
+  background: var(--geo-sky);
+}
+.metric-item--sky .metric-value {
+  color: var(--geo-sky-dark);
+}
+
+.metric-item--gold {
+  background: linear-gradient(135deg, rgba(255, 213, 79, 0.1), rgba(255, 213, 79, 0.02));
+}
+.metric-item--gold::before {
+  background: var(--geo-gold);
+}
+.metric-item--gold .metric-value {
+  color: var(--geo-gold-dark);
+}
+
+.metric-item--navy {
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.06), rgba(26, 26, 46, 0.02));
+}
+.metric-item--navy::before {
+  background: var(--geo-navy);
+}
+.metric-item--navy .metric-value {
+  color: var(--geo-navy);
 }
 
 .metric-value {
   font-size: 1.8rem;
-  font-weight: 700;
-  color: #4a6b57;
+  font-weight: 800;
   margin-bottom: 8px;
   line-height: 1.2;
 }
 
 .metric-label {
   font-size: 0.9rem;
-  color: #7f9c8d;
-  text-transform: capitalize;
+  color: var(--color-text-muted);
 }
 
-/* 响应式适配 */
 @media (max-width: 992px) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
-
   .metrics-container {
     grid-template-columns: 1fr;
   }
@@ -465,21 +472,17 @@ onUnmounted(() => {
   .section {
     padding: 16px;
   }
-
   .section-title {
     font-size: 1.6rem;
   }
-
   .metric-value {
     font-size: 1.5rem;
   }
-
   .chart-container {
     min-height: 200px;
   }
 }
 
-/* 暗黑模式适配（可选） */
 :deep(.dark) .stats-dashboard {
   background-color: #1e1e1e;
 }

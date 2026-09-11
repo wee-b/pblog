@@ -137,66 +137,74 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* 变量定义 */
-:root {
-  --nav-height: 64px;
-  --nav-text-color: #2c3e50;
-  --nav-active-color: #67c23a;
-  --nav-bg-solid: rgba(255, 255, 255, 0.95);
-}
-
 .layout-nav-container {
   width: 100%;
   position: relative;
   z-index: 999;
-  height: 64px; /* 占位高度，避免 affix 切换时页面跳动 */
+  height: 64px;
 }
 
-/*
-  === 关键修复 ===
-  强制覆盖 el-affix 在固定状态下的行内样式
-  解决滚动后宽度被 JS 固定为像素值导致的响应式失效问题
-*/
 :deep(.el-affix--fixed) {
   width: 100% !important;
   left: 0 !important;
   right: 0 !important;
 }
 
-/* 导航栏主体 */
+/* Nav body — geometric style */
 .layout-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
   height: 64px;
   padding: 0 40px;
-
-  /* 关键：确保宽度撑满且 Padding 不会撑破容器 */
   width: 100%;
   box-sizing: border-box;
-
   transition: all 0.3s ease-in-out;
-  /* 默认 Solid 样式 */
-  background-color: var(--nav-bg-solid);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
 }
 
-/* 透明状态 */
+/* Geometric accent bar at bottom */
+.layout-nav::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--geo-coral) 0%,
+    var(--geo-gold) 33%,
+    var(--geo-sky) 66%,
+    var(--geo-navy) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.nav-solid::after {
+  opacity: 1;
+}
+
 .nav-transparent {
   background-color: transparent !important;
-  box-shadow: none !important;
+  border-bottom-color: transparent !important;
   backdrop-filter: none !important;
 }
 
-/* 实心状态 (加强优先级) */
-.nav-solid {
-  background-color: var(--nav-bg-solid);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+.nav-transparent::after {
+  opacity: 0;
 }
 
-/* --- 布局区域 --- */
+.nav-solid {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Layout areas */
 .nav-left, .nav-center, .nav-right {
   flex: 1;
   display: flex;
@@ -222,31 +230,32 @@ onUnmounted(() => {
   gap: 24px;
 }
 
-/* --- 链接样式 --- */
+/* Link styles — geometric underline */
 .nav-link {
   position: relative;
-  color: var(--nav-text-color);
+  color: var(--color-text-primary);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
   padding: 8px 0;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: color 0.25s;
+  letter-spacing: 0.01em;
 }
 
 .nav-link-underline {
   position: absolute;
   bottom: 0;
-  left: 50%;
+  left: 0;
   width: 0;
-  height: 2px;
-  background: var(--nav-active-color);
-  transition: all 0.3s ease;
-  transform: translateX(-50%);
+  height: 3px;
+  background: var(--geo-coral);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px;
 }
 
 .nav-link:hover, .active-link {
-  color: var(--nav-active-color);
+  color: var(--geo-coral);
 }
 
 .nav-link:hover .nav-link-underline,
@@ -254,39 +263,45 @@ onUnmounted(() => {
   width: 100%;
 }
 
-/* 透明模式下的文字颜色适配 */
+/* Transparent mode */
 .nav-transparent .nav-link {
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  color: var(--color-text-primary);
+  text-shadow: none;
 }
 .nav-transparent .nav-link:hover,
 .nav-transparent .active-link {
-  color: #fff;
+  color: var(--geo-coral-dark);
 }
 .nav-transparent .nav-link-underline {
-  background: #fff;
+  background: var(--geo-coral);
 }
 
-/* --- 搜索框 --- */
+.nav-transparent .search-input :deep(.el-input__wrapper) {
+  background-color: rgba(255, 255, 255, 0.78);
+  border-color: rgba(26, 26, 46, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+/* Search input */
 .search-input {
   width: 300px;
   transition: width 0.3s;
 }
 .search-input :deep(.el-input__wrapper) {
   border-radius: 20px;
-  background-color: rgba(245, 247, 250, 0.8);
+  background-color: rgba(245, 245, 247, 0.8);
   box-shadow: none;
+  border: 1px solid var(--color-border);
 }
 .search-input :deep(.el-input__wrapper.is-focus) {
   background-color: #fff;
-  box-shadow: 0 0 0 1px var(--nav-active-color);
+  box-shadow: 0 0 0 2px var(--geo-coral-light);
+  border-color: var(--geo-coral);
 }
 
-/* 响应式设计 */
+/* Responsive */
 @media (max-width: 1200px) {
-  .layout-nav {
-    padding: 0 20px;
-  }
+  .layout-nav { padding: 0 20px; }
 }
 
 @media (max-width: 992px) {
@@ -298,12 +313,10 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .layout-nav { padding: 0 16px; height: 56px; }
   .layout-nav-container { height: 56px; }
-
   .nav-left, .nav-center, .nav-right { flex: none; }
   .nav-left { flex: 1; justify-content: flex-start; gap: 12px; }
   .nav-center { display: none; }
   .nav-right { flex: 1; justify-content: flex-end; gap: 12px; }
-
   .nav-link { font-size: 14px; }
 }
 

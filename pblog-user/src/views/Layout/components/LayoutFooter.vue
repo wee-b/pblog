@@ -1,5 +1,13 @@
 <template>
   <footer class="layout-footer">
+    <!-- Geometric top border -->
+    <div class="geo-top-border">
+      <div class="geo-segment coral"></div>
+      <div class="geo-segment gold"></div>
+      <div class="geo-segment sky"></div>
+      <div class="geo-segment navy"></div>
+    </div>
+
     <div class="footer-content">
       <div class="footer-links">
         <div class="link-column">
@@ -28,7 +36,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p>© 2023 我的个人博客 - 使用 Vue3 和 Element Plus 构建</p>
+        <p>© 2025 PBlog — Geometric Theme</p>
         <div class="social-icons">
           <a href="#"><i class="el-icon-wechat"></i></a>
           <a href="#"><i class="el-icon-weibo"></i></a>
@@ -40,21 +48,68 @@
 </template>
 
 <script setup>
-// 这里可以添加一些逻辑，如果需要的话
 </script>
 
 <style scoped>
 .layout-footer {
-  background-color: #1e5631;
+  background-color: var(--geo-navy);
   color: #fff;
-  padding: 40px 0 20px;
-  margin-top: 40px;
+  padding: 0;
+  margin-top: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Geometric top border — colorful segments */
+.geo-top-border {
+  display: flex;
+  width: 100%;
+  height: 6px;
+}
+
+.geo-segment {
+  flex: 1;
+  height: 100%;
+}
+
+.geo-segment.coral { background: var(--geo-coral); }
+.geo-segment.gold { background: var(--geo-gold); }
+.geo-segment.sky { background: var(--geo-sky); }
+.geo-segment.navy { background: var(--geo-navy-soft); }
+
+/* Geometric decorative triangle */
+.layout-footer::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: 10%;
+  width: 0;
+  height: 0;
+  border-left: 120px solid transparent;
+  border-right: 80px solid transparent;
+  border-bottom: 100px solid rgba(240, 98, 146, 0.08);
+  pointer-events: none;
+}
+
+.layout-footer::after {
+  content: '';
+  position: absolute;
+  bottom: -40px;
+  left: 5%;
+  width: 0;
+  height: 0;
+  border-left: 80px solid transparent;
+  border-right: 150px solid transparent;
+  border-bottom: 120px solid rgba(79, 195, 247, 0.06);
+  pointer-events: none;
 }
 
 .footer-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 50px 20px 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .footer-links {
@@ -71,9 +126,23 @@
 }
 
 .link-column h3 {
-  color: #a4de02;
+  color: var(--geo-gold);
   margin-bottom: 15px;
   font-size: 18px;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.link-column h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 30px;
+  height: 3px;
+  background: var(--geo-coral);
+  border-radius: 2px;
 }
 
 .link-column ul {
@@ -86,22 +155,26 @@
 }
 
 .link-column a {
-  color: #fff;
+  color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
-  transition: color 0.3s;
+  transition: all 0.25s;
+  font-size: 14px;
 }
 
 .link-column a:hover {
-  color: #a4de02;
+  color: var(--geo-sky);
+  padding-left: 6px;
 }
 
 .footer-bottom {
-  border-top: 1px solid #2d7d46;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   padding-top: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
 }
 
 .social-icons {
@@ -110,20 +183,20 @@
 }
 
 .social-icons a {
-  color: #fff;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 20px;
-  transition: color 0.3s;
+  transition: all 0.25s;
 }
 
 .social-icons a:hover {
-  color: #a4de02;
+  color: var(--geo-gold);
+  transform: translateY(-2px);
 }
 
 @media (max-width: 768px) {
   .footer-links {
     flex-direction: column;
   }
-
   .footer-bottom {
     flex-direction: column;
     text-align: center;

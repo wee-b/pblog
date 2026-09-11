@@ -7,11 +7,12 @@
 
     <div class="collections-container">
       <div
-          v-for="collection in collections"
+          v-for="(collection, idx) in collections"
           :key="collection.id"
           class="collection-card"
-          :style="{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${collection.image})` }"
+          :class="`collection-card--${idx % 4}`"
       >
+        <div class="collection-geo-bg"></div>
         <div class="collection-content">
           <h3>{{ collection.title }}</h3>
           <p class="collection-desc">{{ collection.description }}</p>
@@ -67,24 +68,68 @@ const collections = [
 
 <style scoped>
 .featured-collections {
-  background-color: #f5f9f4;
+  background-color: var(--color-bg-soft);
   padding: 80px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Geometric background decoration */
+.featured-collections::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: -60px;
+  width: 0;
+  height: 0;
+  border-left: 200px solid transparent;
+  border-right: 150px solid transparent;
+  border-bottom: 280px solid var(--geo-coral-light);
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.featured-collections::after {
+  content: '';
+  position: absolute;
+  bottom: -80px;
+  right: -40px;
+  width: 0;
+  height: 0;
+  border-left: 180px solid transparent;
+  border-right: 120px solid transparent;
+  border-bottom: 240px solid var(--geo-sky-light);
+  opacity: 0.12;
+  pointer-events: none;
 }
 
 .section-header {
   text-align: center;
   margin-bottom: 50px;
+  position: relative;
+  z-index: 1;
 }
 
 .section-title {
   font-size: 2.2rem;
-  color: #4a6b57;
+  color: var(--color-text-primary);
   margin-bottom: 15px;
+  font-weight: 800;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  margin: 12px auto 0;
+  background: linear-gradient(90deg, var(--geo-sky), var(--geo-gold));
+  border-radius: 2px;
 }
 
 .section-subtitle {
   font-size: 1.1rem;
-  color: #7f9c8d;
+  color: var(--color-text-muted);
 }
 
 .collections-container {
@@ -93,13 +138,13 @@ const collections = [
   gap: 30px;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 .collection-card {
   height: 350px;
-  border-radius: 12px;
-  background-size: cover;
-  background-position: center;
+  border-radius: var(--radius-lg);
   position: relative;
   overflow: hidden;
   transition: transform 0.3s, box-shadow 0.3s;
@@ -107,12 +152,83 @@ const collections = [
   align-items: flex-end;
   padding: 25px;
   color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .collection-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Geometric backgrounds for each card — no images needed */
+.collection-geo-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Card 0: Coral + Navy */
+.collection-card--0 .collection-geo-bg {
+  background: linear-gradient(135deg, var(--geo-coral) 0%, var(--geo-navy) 100%);
+}
+.collection-card--0::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-left: 120px solid transparent;
+  border-bottom: 160px solid rgba(255, 255, 255, 0.1);
+  z-index: 1;
+}
+
+/* Card 1: Sky + Navy */
+.collection-card--1 .collection-geo-bg {
+  background: linear-gradient(135deg, var(--geo-sky) 0%, var(--geo-navy) 100%);
+}
+.collection-card--1::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-right: 100px solid transparent;
+  border-top: 140px solid rgba(255, 255, 255, 0.08);
+  z-index: 1;
+}
+
+/* Card 2: Gold + Navy */
+.collection-card--2 .collection-geo-bg {
+  background: linear-gradient(135deg, var(--geo-gold) 0%, var(--geo-navy-soft) 100%);
+}
+.collection-card--2::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 1;
+}
+
+/* Card 3: Coral + Sky */
+.collection-card--3 .collection-geo-bg {
+  background: linear-gradient(135deg, var(--geo-coral-dark) 0%, var(--geo-sky-dark) 100%);
+}
+.collection-card--3::before {
+  content: '';
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 1;
 }
 
 .collection-content {
@@ -123,7 +239,7 @@ const collections = [
 .collection-content h3 {
   font-size: 1.5rem;
   margin-bottom: 12px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .collection-desc {
@@ -155,16 +271,13 @@ const collections = [
   .featured-collections {
     padding: 60px 15px;
   }
-
   .section-title {
     font-size: 1.8rem;
   }
-
   .collections-container {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-
   .collection-card {
     height: 300px;
   }

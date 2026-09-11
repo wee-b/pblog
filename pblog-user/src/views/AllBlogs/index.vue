@@ -348,11 +348,53 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 搜索框容器 */
+/* ============================================
+   AllBlogs — Geometric Theme Styles
+   ============================================ */
+
+/* --- Search Header --- */
+.allBlogs-search-header {
+  background: var(--color-bg-card);
+  padding-bottom: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle geometric corner decoration */
+.allBlogs-search-header::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, var(--geo-coral-light) 0%, transparent 60%);
+  border-radius: 50%;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.allBlogs-search-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 60px;
+  width: 0;
+  height: 0;
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-bottom: 24px solid var(--geo-gold-light);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* --- Search Input --- */
 .search-input-container {
   display: flex;
   justify-content: center;
   padding: 30px 96px 0;
+  position: relative;
+  z-index: 1;
 }
 
 .custom-search-input {
@@ -360,15 +402,35 @@ onMounted(() => {
   max-width: 600px;
 }
 
-/* 现有样式保持不变，略作调整 */
-.allBlogs-search-header {
-  background: #fff;
-  padding-bottom: 0;
+:deep(.custom-search-input .el-input__wrapper) {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-geo);
+  transition: box-shadow 0.3s ease;
 }
 
+:deep(.custom-search-input .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px var(--geo-coral-light), var(--shadow-md);
+}
+
+:deep(.custom-search-input .el-input-group__append) {
+  background: linear-gradient(135deg, var(--geo-coral), var(--geo-coral-dark));
+  color: #fff;
+  border: none;
+  border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+  box-shadow: none;
+  font-weight: 500;
+}
+
+:deep(.custom-search-input .el-input-group__append:hover) {
+  background: linear-gradient(135deg, var(--geo-coral-dark), var(--geo-coral));
+}
+
+/* --- Search Filter / Conditions --- */
 .search-conditions {
   margin-top: 20px;
   padding: 0 96px;
+  position: relative;
+  z-index: 1;
 }
 
 .tags-row {
@@ -380,36 +442,49 @@ onMounted(() => {
 
 .category-label {
   font-size: 14px;
-  color: #606266;
+  color: var(--color-text-primary);
   margin-right: 12px;
   line-height: 24px;
   flex-shrink: 0;
-  font-weight: bold;
+  font-weight: 700;
 }
 
+/* --- Tag Chips --- */
 .el-check-tag {
   margin-right: 12px;
   margin-bottom: 8px;
-  font-weight: normal;
-  transition: all 0.3s;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border-radius: var(--radius-md);
 }
 
 .custom-check-tag {
   background-color: transparent !important;
-  color: #606266 !important;
+  color: var(--color-text-secondary) !important;
   border: 1px solid transparent !important;
 }
+
 .custom-check-tag:hover {
-  color: var(--el-color-primary) !important;
+  color: var(--geo-coral) !important;
+  background-color: var(--geo-coral-light) !important;
 }
 
+/* Checked tags use coral theme */
+:deep(.el-check-tag.is-checked) {
+  background-color: var(--geo-coral) !important;
+  color: #fff !important;
+  border-color: var(--geo-coral) !important;
+}
+
+/* --- Sub-tag Content Container --- */
 .tag-content-container {
   padding: 20px;
-  background: #f7f8fa;
-  border-radius: 8px;
+  background: var(--color-bg-soft);
+  border-radius: var(--radius-md);
   margin-bottom: 20px;
   margin-left: 54px;
   position: relative;
+  border-left: 3px solid var(--geo-sky);
 }
 
 .tag-content-container::before {
@@ -419,7 +494,22 @@ onMounted(() => {
   left: 20px;
   border-width: 0 8px 8px;
   border-style: solid;
-  border-color: transparent transparent #f7f8fa;
+  border-color: transparent transparent var(--color-bg-soft);
+}
+
+/* Small geometric accent inside tag container */
+.tag-content-container::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 10px solid var(--geo-gold-light);
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .sub-tags-row {
@@ -435,7 +525,7 @@ onMounted(() => {
 }
 
 .tag-separator {
-  color: #909399;
+  color: var(--geo-gray-mid);
   margin: 0 8px 8px 0;
   font-weight: bold;
 }
@@ -446,22 +536,23 @@ onMounted(() => {
 }
 
 .no-sub-tags {
-  color: #909399;
+  color: var(--color-text-muted);
   font-size: 13px;
   padding: 10px 0;
 }
 
+/* --- Selected Tags Area --- */
 .selected-area {
   margin-top: 20px;
   align-items: center;
-  min-height: 32px; /* 防止没有选中时高度坍塌太严重 */
+  min-height: 32px;
 }
 
 .selected-tags-label {
-  color: #606266;
+  color: var(--color-text-primary);
   margin-right: 12px;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .selected-tags-container {
@@ -471,39 +562,151 @@ onMounted(() => {
   align-items: center;
 }
 
+/* Selected tag pills use sky accent */
+:deep(.selected-area .el-tag) {
+  background-color: var(--geo-sky-light);
+  color: var(--geo-sky-dark);
+  border-color: var(--geo-sky);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+:deep(.selected-area .el-tag .el-tag__close) {
+  color: var(--geo-sky-dark);
+}
+
+:deep(.selected-area .el-tag .el-tag__close:hover) {
+  background-color: var(--geo-sky);
+  color: #fff;
+}
+
 .no-selected-tips {
-  color: #999;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
 .clear-btn {
   margin-left: 12px;
+  color: var(--geo-coral) !important;
+  font-weight: 500;
 }
 
+.clear-btn:hover {
+  color: var(--geo-coral-dark) !important;
+}
+
+/* --- Divider (gradient line) --- */
 .divider {
-  height: 1px;
-  background-color: #ebeef5;
+  height: 3px;
   width: 100%;
   margin-top: 20px;
+  background: linear-gradient(
+    90deg,
+    var(--geo-coral) 0%,
+    var(--geo-gold) 33%,
+    var(--geo-sky) 66%,
+    var(--geo-navy) 100%
+  );
+  border-radius: 2px;
+  opacity: 0.6;
 }
 
+/* --- Content Area --- */
 .allBlogs-search-content {
   padding: 0 96px;
   min-height: 400px;
+  background: var(--color-bg-soft);
 }
 
+/* Loading text color */
+:deep(.el-loading-spinner .el-loading-text) {
+  color: var(--geo-coral);
+}
+
+:deep(.el-loading-spinner .path) {
+  stroke: var(--geo-coral);
+}
+
+/* --- Article Grid --- */
 .article-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 20px 0;
+  gap: 24px;
+  padding: 24px 0;
   align-items: stretch;
 }
 
+/* --- Pagination --- */
 .pagination-container {
   display: flex;
   justify-content: center;
   margin-top: 20px;
   padding-bottom: 40px;
+}
+
+:deep(.el-pagination) {
+  --el-pagination-bg-color: transparent;
+  --el-pagination-text-color: var(--color-text-primary);
+  --el-pagination-button-color: var(--geo-coral);
+}
+
+:deep(.el-pagination .el-pager li.is-active) {
+  background: var(--geo-coral);
+  color: #fff;
+  border-radius: var(--radius-md);
+}
+
+:deep(.el-pagination button:hover),
+:deep(.el-pagination .el-pager li:hover) {
+  color: var(--geo-coral);
+}
+
+/* --- Empty State --- */
+:deep(.el-empty__description p) {
+  color: var(--color-text-muted);
+}
+
+/* --- Responsive --- */
+@media (max-width: 992px) {
+  .search-input-container {
+    padding: 24px 40px 0;
+  }
+  .search-conditions {
+    padding: 0 40px;
+  }
+  .allBlogs-search-content {
+    padding: 0 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-input-container {
+    padding: 20px 16px 0;
+  }
+  .search-conditions {
+    padding: 0 16px;
+  }
+  .allBlogs-search-content {
+    padding: 0 16px;
+  }
+  .article-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .tag-content-container {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .search-input-container {
+    padding: 16px 12px 0;
+  }
+  .search-conditions {
+    padding: 0 12px;
+  }
+  .allBlogs-search-content {
+    padding: 0 12px;
+  }
 }
 </style>

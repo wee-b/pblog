@@ -6,11 +6,7 @@ import { RouterLink, RouterView } from 'vue-router'
   <RouterView />
 </template>
 
-<style scoped>
-:root {
-  --nav-height: 60px;
-}
-
+<style>
 body {
   margin: 0;
   padding: 0;

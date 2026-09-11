@@ -77,12 +77,7 @@ onMounted(async () => {
 
 const handleArticleClick = (id) => {
   console.log('点击了文章:', id)
-  // 这里可以添加跳转逻辑
 }
-
-
-
-
 </script>
 
 <style scoped>
@@ -90,35 +85,68 @@ const handleArticleClick = (id) => {
   padding: 80px 20px;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+}
+
+/* Geometric decorative element */
+.section::before {
+  content: '';
+  position: absolute;
+  top: 40px;
+  right: 5%;
+  width: 0;
+  height: 0;
+  border-left: 40px solid transparent;
+  border-right: 60px solid transparent;
+  border-bottom: 80px solid var(--geo-gold-light);
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .section-header {
   text-align: center;
   margin-bottom: 50px;
+  position: relative;
+  z-index: 1;
 }
 
 .section-title {
   font-size: 2.2rem;
-  color: #4a6b57;
+  color: var(--color-text-primary);
   margin-bottom: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* Geometric underline for section title */
+.section-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  margin: 12px auto 0;
+  background: linear-gradient(90deg, var(--geo-coral), var(--geo-gold));
+  border-radius: 2px;
 }
 
 .section-subtitle {
   font-size: 1.1rem;
-  color: #7f9c8d;
+  color: var(--color-text-muted);
 }
 
 .articles-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 30px;
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 768px) {
   .section {
     padding: 60px 20px;
   }
-
   .section-title {
     font-size: 1.8rem;
   }

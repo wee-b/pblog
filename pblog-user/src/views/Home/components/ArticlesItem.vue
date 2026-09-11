@@ -1,5 +1,8 @@
 <template>
   <el-card class="article-card" shadow="hover" :body-style="{ padding: '0px', display: 'flex', flexDirection: 'column', height: '100%' }">
+    <!-- Geometric accent stripe -->
+    <div class="card-accent-stripe"></div>
+
     <!-- 头部区域：标题 + Meta -->
     <div class="card-header">
       <h3 class="article-title" :title="article.title">
@@ -39,8 +42,7 @@
       </div>
     </div>
 
-    <!-- 全局点击覆盖层 (通过 CSS absolute 定位) -->
-    <!-- 注意：如果你希望用户能复制文字，建议移除此遮罩，只依靠 @click 事件 -->
+    <!-- 全局点击覆盖层 -->
     <div class="card-clickable-area" @click="handleCardClick"></div>
   </el-card>
 </template>
@@ -59,14 +61,12 @@ const props = defineProps({
 
 const router = useRouter()
 
-// 点击卡片跳转
 const handleCardClick = () => {
   if (props.article.id) {
     router.push(`/blog/${props.article.id}`)
   }
 }
 
-// 格式化日期 (原生实现，无需依赖库)
 const formatDate = (dateStr) => {
   if (!dateStr) return '未知时间'
   const date = new Date(dateStr)
@@ -77,7 +77,6 @@ const formatDate = (dateStr) => {
   }).format(date)
 }
 
-// 简单的数字格式化 (超过1000显示k)
 const formatNumber = (num) => {
   if (!num) return 0
   return num > 999 ? (num / 1000).toFixed(1) + 'k' : num
@@ -86,56 +85,80 @@ const formatNumber = (num) => {
 
 <style scoped>
 .article-card {
-  height: 100%; /* 关键：撑满父容器高度 */
+  height: 100%;
   border: none;
-  background-color: rgba(208,240,203,0.93);
-  border-radius: 8px;
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Geometric accent stripe at top */
+.card-accent-stripe {
+  height: 4px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--geo-coral) 0%,
+    var(--geo-gold) 50%,
+    var(--geo-sky) 100%
+  );
+  flex-shrink: 0;
 }
 
 .article-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* --- 头部 --- */
+/* Geometric corner decoration on hover */
+.article-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 60px 60px 0;
+  border-color: transparent var(--geo-coral-light) transparent transparent;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.article-card:hover::before {
+  opacity: 0.4;
+}
+
+/* --- Header --- */
 .card-header {
   padding: 20px 20px 10px 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .article-title {
   margin: 0 0 10px 0;
   font-size: 1.15rem;
   line-height: 1.4;
-  height: 2.8em; /* 固定高度：约等于2行的高度 */
-
-  /* 多行省略号核心代码 */
+  height: 2.8em;
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* 限制显示2行 */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.title-link {
-  color: #2c3e50;
-  text-decoration: none;
-  transition: color 0.2s;
-  position: relative;
-  z-index: 2; /* 保证标题链接在遮罩层之上可点击 */
-}
-
-.title-link:hover {
-  color: #42b983;
+  color: var(--color-text-primary);
+  font-weight: 700;
 }
 
 .article-meta {
   display: flex;
   font-size: 0.85rem;
-  color: #999;
+  color: var(--color-text-muted);
   gap: 15px;
 }
 
@@ -145,21 +168,21 @@ const formatNumber = (num) => {
   gap: 4px;
 }
 
-/* --- 中间内容 (自适应填充) --- */
+/* --- Body --- */
 .card-body {
   padding: 0 20px;
-  flex: 1; /* 关键：占据剩余所有空间，将 footer 挤到底部 */
+  flex: 1;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
 .article-excerpt {
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 0.9rem;
   line-height: 1.6;
   margin: 0 0 15px 0;
-
-  /* 摘要限制3行 */
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -167,24 +190,26 @@ const formatNumber = (num) => {
 }
 
 .tags-container {
-  margin-top: auto; /* 如果摘要很短，标签也会被挤到底部 */
+  margin-top: auto;
   margin-bottom: 15px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-/* --- 底部 --- */
+/* --- Footer --- */
 .card-footer {
   padding: 12px 20px;
-  border-top: 1px solid #f0f0f0;
-  background-color: #fafafa;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-bg-soft);
+  position: relative;
+  z-index: 1;
 }
 
 .stats-container {
   display: flex;
-  justify-content: space-between; /* 或 flex-start + gap */
-  color: #999;
+  justify-content: space-between;
+  color: var(--color-text-muted);
   font-size: 0.85rem;
 }
 
@@ -194,7 +219,7 @@ const formatNumber = (num) => {
   gap: 4px;
 }
 
-/* --- 点击交互 --- */
+/* --- Clickable area --- */
 .card-clickable-area {
   position: absolute;
   top: 0;
@@ -202,6 +227,6 @@ const formatNumber = (num) => {
   width: 100%;
   height: 100%;
   cursor: pointer;
-  z-index: 1; /* 位于底层，但在内容之上 */
+  z-index: 2;
 }
 </style>
