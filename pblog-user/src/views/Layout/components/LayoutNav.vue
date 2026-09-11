@@ -2,66 +2,112 @@
   <div class="layout-nav-container">
     <el-affix :offset="0">
       <nav
-          class="layout-nav"
-          :class="{
-            'nav-transparent': isTransparent && !forceSolid,
-            'nav-solid': !isTransparent || forceSolid
-          }"
+        class="layout-nav"
+        :class="{
+          'nav-transparent': isTransparent && !forceSolid,
+          'nav-solid': !isTransparent || forceSolid,
+          'menu-open': mobileMenuOpen
+        }"
       >
-        <!-- 1. 左侧导航 -->
         <div class="nav-left">
-          <RouterLink
+          <RouterLink to="/" class="nav-brand" aria-label="PBlog 首页" @click="closeMobileMenu">
+            <span class="brand-mark" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </span>
+            <span class="brand-text">PBlog</span>
+          </RouterLink>
+
+          <div class="desktop-menu" aria-label="主要导航">
+            <RouterLink
               v-for="item in menuItems"
               :key="item.path"
               :to="item.path"
-              class="nav-link"
-              active-class="active-link"
-          >
-            {{ item.name }}
-            <span class="nav-link-underline"></span>
-          </RouterLink>
+              class="nav-button"
+              exact-active-class="active-link"
+            >
+              {{ item.name }}
+            </RouterLink>
+          </div>
         </div>
 
-        <!-- 2. 中间搜索框 -->
-        <div class="nav-center" :class="{ 'hidden': !configState.showSearch }">
+        <div class="nav-center" :class="{ hidden: !configState.showSearch }">
           <el-input
-              v-model="searchQuery"
-              placeholder="搜索文章..."
-              class="search-input"
-              @keyup.enter="handleSearch"
+            v-model="searchQuery"
+            placeholder="搜索文章..."
+            class="search-input"
+            clearable
+            @keyup.enter="handleSearch"
           >
-            <template #prefix>
-              <el-icon><Search/></el-icon>
-            </template>
+            <template #prefix><el-icon><Search /></el-icon></template>
           </el-input>
         </div>
 
-        <!-- 3. 右侧功能区 -->
         <div class="nav-right">
-          <GlobalAvatar size="36" />
+          <div class="utility-links">
+            <RouterLink
+              v-for="item in utilityItems"
+              :key="item.path"
+              :to="item.path"
+              class="utility-link"
+              exact-active-class="active-link"
+            >
+              {{ item.name }}
+            </RouterLink>
+          </div>
 
-          <RouterLink to="/links" class="nav-link" active-class="active-link">
-            友链 <span class="nav-link-underline"></span>
-          </RouterLink>
-          <RouterLink to="/createcentre" class="nav-link" active-class="active-link">
-            个人中心 <span class="nav-link-underline"></span>
-          </RouterLink>
-          <RouterLink to="/tools" class="nav-link" active-class="active-link">
-            小工具 <span class="nav-link-underline"></span>
-          </RouterLink>
+          <div class="avatar-frame">
+            <GlobalAvatar :size="34" />
+          </div>
+
+          <button
+            class="mobile-menu-button"
+            type="button"
+            :aria-expanded="mobileMenuOpen"
+            :aria-label="mobileMenuOpen ? '关闭导航菜单' : '打开导航菜单'"
+            @click="mobileMenuOpen = !mobileMenuOpen"
+          >
+            <span></span><span></span><span></span>
+          </button>
         </div>
+
+        <Transition name="mobile-menu">
+          <div v-if="mobileMenuOpen" class="mobile-panel">
+            <el-input
+              v-if="configState.showSearch"
+              v-model="searchQuery"
+              placeholder="搜索文章..."
+              class="mobile-search"
+              clearable
+              @keyup.enter="handleSearch"
+            >
+              <template #prefix><el-icon><Search /></el-icon></template>
+            </el-input>
+
+            <div class="mobile-links">
+              <RouterLink
+                v-for="item in allMobileItems"
+                :key="item.path"
+                :to="item.path"
+                class="mobile-link"
+                exact-active-class="active-link"
+                @click="closeMobileMenu"
+              >
+                {{ item.name }}
+              </RouterLink>
+            </div>
+          </div>
+        </Transition>
       </nav>
     </el-affix>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Search } from '@element-plus/icons-vue';
 import GlobalAvatar from '@/components/GlobalAvatar.vue';
 
-// --- 1. 静态配置 ---
 const menuItems = [
   { name: '首页', path: '/' },
   { name: '博客', path: '/allBlogs' },
@@ -69,261 +115,473 @@ const menuItems = [
   { name: '留言板', path: '/remark' }
 ];
 
-// --- 2. 状态定义 ---
+const utilityItems = [
+  { name: '友链', path: '/links' },
+  { name: '个人中心', path: '/createcentre' },
+  { name: '小工具', path: '/tools' }
+];
+
+const allMobileItems = [...menuItems, ...utilityItems];
 const route = useRoute();
 const router = useRouter();
 
 const searchQuery = ref('');
 const isTransparent = ref(false);
+const mobileMenuOpen = ref(false);
 
-// --- 3. 计算属性：UI配置策略 ---
 const configState = computed(() => {
-  const path = route.path;
-  if (path === '/') {
-    return { forceSolid: false, showSearch: true };
-  } else if (path === '/allBlogs') {
-    return { forceSolid: true, showSearch: false };
-  } else if (path.startsWith('/blog/')) {
-    return { forceSolid: true, showSearch: true };
-  }
+  if (route.path === '/') return { forceSolid: false, showSearch: true };
+  if (route.path === '/allBlogs') return { forceSolid: true, showSearch: false };
   return { forceSolid: true, showSearch: true };
 });
 
 const forceSolid = computed(() => configState.value.forceSolid);
 
-// --- 4. 核心逻辑：状态检查 ---
 const checkScrollState = () => {
   const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop;
-  // 仅在首页且滚动 < 300 时透明
-  if (route.path === '/') {
-    isTransparent.value = scrollTop < 300;
-  } else {
-    isTransparent.value = false;
-  }
+  isTransparent.value = route.path === '/' && scrollTop < 300;
 };
 
-// --- 5. 滚动监听 (防抖优化) ---
 let ticking = false;
 const onScroll = () => {
-  if (!ticking) {
-    window.requestAnimationFrame(() => {
-      checkScrollState();
-      ticking = false;
-    });
-    ticking = true;
-  }
+  if (ticking) return;
+  window.requestAnimationFrame(() => {
+    checkScrollState();
+    ticking = false;
+  });
+  ticking = true;
 };
 
-// --- 6. 业务交互 ---
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false;
+};
+
 const handleSearch = () => {
-  if (!searchQuery.value.trim()) return;
-  router.push({ path: '/allBlogs', query: { keyword: searchQuery.value } });
+  const keyword = searchQuery.value.trim();
+  if (!keyword) return;
+  closeMobileMenu();
+  router.push({ path: '/allBlogs', query: { keyword } });
 };
 
-// --- 7. 监听路由变化 (修复点击链接不更新状态的问题) ---
-watch(() => route.path, () => {
-  checkScrollState();
-});
+watch(
+  () => route.path,
+  () => {
+    checkScrollState();
+    closeMobileMenu();
+  }
+);
 
-// --- 8. 生命周期 ---
 onMounted(() => {
   checkScrollState();
-  window.addEventListener('scroll', onScroll);
+  window.addEventListener('scroll', onScroll, { passive: true });
 });
 
-onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll);
-});
+onUnmounted(() => window.removeEventListener('scroll', onScroll));
 </script>
 
 <style scoped>
 .layout-nav-container {
-  width: 100%;
   position: relative;
   z-index: 999;
-  height: 64px;
+  width: 100%;
+  height: 68px;
 }
 
 :deep(.el-affix--fixed) {
-  width: 100% !important;
-  left: 0 !important;
   right: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
 }
 
-/* Nav body — geometric style */
 .layout-nav {
+  position: relative;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  height: 64px;
-  padding: 0 40px;
   width: 100%;
+  height: 68px;
+  padding: 0 32px;
   box-sizing: border-box;
-  transition: all 0.3s ease-in-out;
-  background-color: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-border);
-}
-
-/* Geometric accent bar at bottom */
-.layout-nav::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--geo-coral) 0%,
-    var(--geo-gold) 33%,
-    var(--geo-sky) 66%,
-    var(--geo-navy) 100%
-  );
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.nav-solid::after {
-  opacity: 1;
+  color: var(--geo-navy);
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 2px solid var(--geo-navy);
+  box-shadow: 0 5px 0 rgba(26, 26, 46, 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .nav-transparent {
-  background-color: transparent !important;
-  border-bottom-color: transparent !important;
-  backdrop-filter: none !important;
-}
-
-.nav-transparent::after {
-  opacity: 0;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: none;
 }
 
 .nav-solid {
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-sm);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 6px 0 rgba(26, 26, 46, 0.1);
 }
 
-/* Layout areas */
-.nav-left, .nav-center, .nav-right {
-  flex: 1;
+.nav-left,
+.nav-right,
+.desktop-menu,
+.utility-links {
   display: flex;
   align-items: center;
 }
 
 .nav-left {
-  justify-content: flex-start;
-  gap: 30px;
-}
-
-.nav-center {
-  justify-content: center;
-  transition: opacity 0.3s;
-}
-.nav-center.hidden {
-  visibility: hidden;
-  pointer-events: none;
+  flex: 1;
+  min-width: 0;
+  gap: clamp(18px, 2vw, 32px);
 }
 
 .nav-right {
+  flex: 1;
   justify-content: flex-end;
-  gap: 24px;
+  gap: 18px;
 }
 
-/* Link styles — geometric underline */
-.nav-link {
-  position: relative;
-  color: var(--color-text-primary);
-  font-size: 15px;
-  font-weight: 600;
+.nav-brand {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  color: var(--geo-navy);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
   text-decoration: none;
-  padding: 8px 0;
-  cursor: pointer;
-  transition: color 0.25s;
-  letter-spacing: 0.01em;
 }
 
-.nav-link-underline {
+.brand-mark {
+  position: relative;
+  display: block;
+  width: 32px;
+  height: 32px;
+  background: var(--geo-gold);
+  border: 2px solid var(--geo-navy);
+  box-shadow: 4px 4px 0 var(--geo-navy);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nav-brand:hover .brand-mark {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--geo-navy);
+}
+
+.brand-mark span {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 3px;
+  display: block;
+}
+
+.brand-mark span:nth-child(1) {
+  top: 5px;
+  left: 5px;
+  width: 9px;
+  height: 9px;
   background: var(--geo-coral);
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 2px;
 }
 
-.nav-link:hover, .active-link {
-  color: var(--geo-coral);
+.brand-mark span:nth-child(2) {
+  right: 4px;
+  bottom: 4px;
+  width: 10px;
+  height: 10px;
+  background: var(--geo-sky);
+  border-radius: 50%;
 }
 
-.nav-link:hover .nav-link-underline,
-.active-link .nav-link-underline {
+.brand-mark span:nth-child(3) {
+  right: 4px;
+  top: 4px;
+  width: 8px;
+  height: 8px;
+  background: var(--geo-navy);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.desktop-menu {
+  gap: 9px;
+}
+
+.nav-button,
+.utility-link,
+.mobile-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--geo-navy);
+  font-weight: 750;
+  text-decoration: none;
+  white-space: nowrap;
+  background: #fff;
+  border: 2px solid transparent;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.nav-button {
+  min-height: 38px;
+  padding: 0 13px;
+  font-size: 14px;
+}
+
+.nav-button:hover,
+.utility-link:hover {
+  background: var(--geo-sky-light);
+  border-color: var(--geo-navy);
+  transform: translate(-2px, -2px);
+  box-shadow: 3px 3px 0 var(--geo-navy);
+}
+
+.nav-button.active-link {
+  background: var(--geo-gold);
+  border-color: var(--geo-navy);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--geo-navy);
+}
+
+.nav-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: clamp(220px, 21vw, 300px);
+  transform: translate(-50%, -50%);
+  transition: opacity 0.2s ease;
+}
+
+.nav-center.hidden {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.search-input,
+.mobile-search {
   width: 100%;
 }
 
-/* Transparent mode */
-.nav-transparent .nav-link {
-  color: var(--color-text-primary);
-  text-shadow: none;
-}
-.nav-transparent .nav-link:hover,
-.nav-transparent .active-link {
-  color: var(--geo-coral-dark);
-}
-.nav-transparent .nav-link-underline {
-  background: var(--geo-coral);
+.search-input :deep(.el-input__wrapper),
+.mobile-search :deep(.el-input__wrapper) {
+  min-height: 40px;
+  background: #fff;
+  border: 2px solid var(--geo-navy);
+  border-radius: 0;
+  box-shadow: 3px 3px 0 var(--geo-coral);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
 
-.nav-transparent .search-input :deep(.el-input__wrapper) {
-  background-color: rgba(255, 255, 255, 0.78);
-  border-color: rgba(26, 26, 46, 0.1);
-  backdrop-filter: blur(8px);
+.search-input :deep(.el-input__wrapper.is-focus),
+.mobile-search :deep(.el-input__wrapper.is-focus) {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--geo-coral);
 }
 
-/* Search input */
-.search-input {
-  width: 300px;
-  transition: width 0.3s;
-}
-.search-input :deep(.el-input__wrapper) {
-  border-radius: 20px;
-  background-color: rgba(245, 245, 247, 0.8);
-  box-shadow: none;
-  border: 1px solid var(--color-border);
-}
-.search-input :deep(.el-input__wrapper.is-focus) {
-  background-color: #fff;
-  box-shadow: 0 0 0 2px var(--geo-coral-light);
-  border-color: var(--geo-coral);
+.search-input :deep(.el-input__inner),
+.mobile-search :deep(.el-input__inner) {
+  color: var(--geo-navy);
+  font-weight: 600;
 }
 
-/* Responsive */
-@media (max-width: 1200px) {
-  .layout-nav { padding: 0 20px; }
+.utility-links {
+  gap: 4px;
 }
 
-@media (max-width: 992px) {
-  .nav-left { gap: 20px; }
-  .nav-right { gap: 16px; }
-  .search-input { width: 250px; }
+.utility-link {
+  min-height: 34px;
+  padding: 0 8px;
+  font-size: 13px;
 }
 
-@media (max-width: 768px) {
-  .layout-nav { padding: 0 16px; height: 56px; }
-  .layout-nav-container { height: 56px; }
-  .nav-left, .nav-center, .nav-right { flex: none; }
-  .nav-left { flex: 1; justify-content: flex-start; gap: 12px; }
-  .nav-center { display: none; }
-  .nav-right { flex: 1; justify-content: flex-end; gap: 12px; }
-  .nav-link { font-size: 14px; }
+.utility-link.active-link {
+  background: var(--geo-coral-light);
+  border-color: var(--geo-navy);
+  box-shadow: 3px 3px 0 var(--geo-navy);
 }
 
-@media (max-width: 576px) {
-  .layout-nav { padding: 0 12px; }
-  .nav-left { gap: 8px; }
-  .nav-right { gap: 8px; }
-  .nav-link { font-size: 13px; }
+.avatar-frame {
+  display: flex;
+  flex: none;
+  padding: 2px;
+  background: #fff;
+  border: 2px solid var(--geo-navy);
+  box-shadow: 3px 3px 0 var(--geo-sky);
+}
+
+.avatar-frame :deep(.el-avatar) {
+  border-radius: 0;
+}
+
+.mobile-menu-button {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  gap: 5px;
+  color: var(--geo-navy);
+  background: var(--geo-gold);
+  border: 2px solid var(--geo-navy);
+  box-shadow: 3px 3px 0 var(--geo-navy);
+  cursor: pointer;
+}
+
+.mobile-menu-button span {
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.menu-open .mobile-menu-button span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menu-open .mobile-menu-button span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-open .mobile-menu-button span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.mobile-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 12px;
+  left: 12px;
+  display: none;
+  padding: 14px;
+  background: #fff;
+  border: 2px solid var(--geo-navy);
+  box-shadow: 6px 6px 0 var(--geo-navy);
+}
+
+.mobile-search {
+  margin-bottom: 14px;
+}
+
+.mobile-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mobile-link {
+  min-height: 44px;
+  font-size: 14px;
+  border-color: var(--geo-navy);
+}
+
+.mobile-link:nth-child(3n + 1) {
+  background: var(--geo-gold-light);
+}
+
+.mobile-link:nth-child(3n + 2) {
+  background: var(--geo-coral-light);
+}
+
+.mobile-link:nth-child(3n) {
+  background: var(--geo-sky-light);
+}
+
+.mobile-link.active-link,
+.mobile-link:hover {
+  background: var(--geo-gold);
+  transform: translate(-2px, -2px);
+  box-shadow: 3px 3px 0 var(--geo-navy);
+}
+
+.mobile-menu-enter-active,
+.mobile-menu-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  transform-origin: top center;
+}
+
+.mobile-menu-enter-from,
+.mobile-menu-leave-to {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+}
+
+@media (max-width: 1240px) {
+  .layout-nav {
+    padding: 0 20px;
+  }
+
+  .brand-text {
+    display: none;
+  }
+
+  .nav-left {
+    gap: 18px;
+  }
+
+  .nav-button {
+    padding: 0 9px;
+  }
+
+  .nav-right {
+    gap: 12px;
+  }
+
+  .utility-link {
+    padding: 0 5px;
+  }
+
+  .nav-center {
+    width: clamp(190px, 19vw, 240px);
+  }
+}
+
+@media (max-width: 960px) {
+  .layout-nav-container,
+  .layout-nav {
+    height: 64px;
+  }
+
+  .layout-nav {
+    padding: 0 14px;
+  }
+
+  .desktop-menu,
+  .nav-center,
+  .utility-links {
+    display: none;
+  }
+
+  .brand-text {
+    display: inline;
+  }
+
+  .mobile-menu-button,
+  .mobile-panel {
+    display: flex;
+  }
+
+  .mobile-panel {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand-text {
+    font-size: 17px;
+  }
+
+  .mobile-links {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark,
+  .nav-button,
+  .utility-link,
+  .mobile-menu-button span,
+  .mobile-menu-enter-active,
+  .mobile-menu-leave-active {
+    transition: none;
+  }
 }
 </style>

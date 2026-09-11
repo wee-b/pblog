@@ -1,9 +1,10 @@
 <template>
   <!-- 1. 用户头像（含下拉菜单）- 支持自定义尺寸 -->
   <el-popover
+      v-model:visible="popoverVisible"
       placement="bottom-end"
       trigger="hover"
-      :width="220"
+      :width="240"
       popper-class="user-popover"
       :show-arrow="false"
       transition="el-zoom-in-top"
@@ -18,8 +19,14 @@
   <!-- 下拉菜单内容（原有逻辑不变） -->
   <div class="user-menu-content">
     <div class="user-card">
-      <p class="nickname">{{ isLogin ? (userInfo?.nickname || '默认用户') : '未登录' }}</p>
-      <p class="username" v-if="isLogin">账号:{{ userInfo?.username }}</p>
+      <span class="user-card-mark" aria-hidden="true">
+        <span></span>
+      </span>
+      <div class="user-card-copy">
+        <p class="nickname">{{ isLogin ? (userInfo?.nickname || '默认用户') : '访客模式' }}</p>
+        <p class="username" v-if="isLogin">账号：{{ userInfo?.username }}</p>
+        <p class="username" v-else>登录后管理你的内容</p>
+      </div>
     </div>
     <div class="menu-divider"></div>
 
@@ -49,6 +56,10 @@
     <div class="login-dialog-mask" v-if="isVisible" @mousedown="handleMaskMousedown"
          @mouseup="handleMaskMouseup">
       <div class="login-dialog">
+        <div class="dialog-kicker">
+          <span aria-hidden="true"></span>
+          PBLOG ACCESS
+        </div>
         <div class="login-dialog-header">
           <div
               class="login-tab"
@@ -220,6 +231,7 @@ const props = defineProps({
 // 登录相关（原有逻辑优化）
 const router = useRouter();
 const route = useRoute(); // 🔧 新增：路由实例（用于退出登录时判断是否需要跳转）
+const popoverVisible = ref(false);
 const { proxy } = getCurrentInstance();
 const $loginManager = proxy?.$loginManager;
 const isLogin = ref(false);
@@ -231,14 +243,17 @@ const avatarUrl = computed(() => {
 });
 
 const navigateTo = (path) => {
+  popoverVisible.value = false;
   router.push(path);
 };
 
 const openLogin = () => {
+  popoverVisible.value = false;
   $loginManager?.showLogin();
 };
 
 const handleLogout = () => {
+  popoverVisible.value = false;
   $loginManager?.logout();
 };
 
@@ -533,225 +548,425 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped>
-/* 🔧 新增：头像组件样式（原有缺失，补充完整） */
 .avatar-wrapper {
   cursor: pointer;
-  transition: transform 0.2s;
   display: flex;
   align-items: center;
+  transition: transform 0.18s ease;
 }
+
 .avatar-wrapper:hover {
-  transform: scale(1.1);
+  transform: translate(-1px, -1px);
 }
+
 .user-menu-content {
-  padding: 10px 0;
+  padding: 12px;
+  color: var(--geo-navy);
+  background: #fff;
 }
+
 .user-card {
-  padding: 10px 20px;
-  background-color: #f9fafe;
-}
-.user-card .nickname {
-  font-weight: bold;
-  font-size: 15px;
-  margin: 0;
-  color: #333;
-}
-.user-card .username {
-  font-size: 12px;
-  color: #999;
-  margin: 4px 0 0 0;
-}
-.menu-divider {
-  height: 1px;
-  background-color: #eee;
-  margin: 5px 0;
-}
-.menu-item {
-  padding: 10px 20px;
-  cursor: pointer;
   display: flex;
   align-items: center;
-  font-size: 14px;
-  color: #555;
-  transition: background 0.2s;
+  min-height: 64px;
+  padding: 12px;
+  gap: 12px;
+  background: var(--geo-gold-light);
+  border: 2px solid var(--geo-navy);
+  box-shadow: 4px 4px 0 var(--geo-gold);
 }
+
+.user-card-mark {
+  position: relative;
+  display: grid;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  background: var(--geo-coral);
+  border: 2px solid var(--geo-navy);
+}
+
+.user-card-mark::before,
+.user-card-mark::after,
+.user-card-mark span {
+  position: absolute;
+  content: '';
+  background: var(--geo-navy);
+}
+
+.user-card-mark::before {
+  top: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.user-card-mark::after {
+  bottom: 6px;
+  width: 18px;
+  height: 9px;
+  border-radius: 10px 10px 2px 2px;
+}
+
+.user-card-copy {
+  min-width: 0;
+}
+
+.user-card .nickname {
+  margin: 0;
+  overflow: hidden;
+  color: var(--geo-navy);
+  font-size: 15px;
+  font-weight: 850;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-card .username {
+  margin: 4px 0 0 0;
+  overflow: hidden;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-divider {
+  height: 2px;
+  margin: 12px 0;
+  background: var(--geo-navy);
+  opacity: 0.12;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 12px;
+  color: var(--geo-navy);
+  font-size: 13px;
+  font-weight: 750;
+  background: #fff;
+  border: 2px solid var(--geo-navy);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
 .menu-item:hover {
-  background-color: #f0f9eb;
-  color: #67c23a;
+  color: var(--geo-navy);
+  background: var(--geo-sky-light);
+  box-shadow: 3px 3px 0 var(--geo-navy);
+  transform: translate(-2px, -2px);
 }
+
 .menu-item .el-icon {
   margin-right: 8px;
   font-size: 16px;
 }
+
 .menu-item.logout:hover {
-  background-color: #fef0f0;
-  color: #f56c6c;
+  color: var(--geo-navy);
+  background: var(--geo-coral-light);
 }
 
-/* 原有样式不变，确保按钮状态清晰 */
+.user-menu-content > .login-btn {
+  color: var(--geo-navy);
+  background: var(--geo-gold);
+  box-shadow: 3px 3px 0 var(--geo-navy);
+}
+
 .login-dialog-mask {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background-color: rgba(26, 26, 46, 0.66);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 36px 36px;
+  backdrop-filter: blur(4px);
   z-index: 9999;
 }
+
 .login-dialog {
-  width: 350px;
+  position: relative;
+  width: min(420px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  padding: 26px 28px 28px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  color: var(--geo-navy);
   background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  position: relative;
+  border: 3px solid var(--geo-navy);
+  border-radius: 0;
+  box-shadow: 10px 10px 0 var(--geo-navy);
 }
-.login-dialog-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-  position: relative;
-  height: 40px;
-}
-.login-tab {
-  width: 50%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 500;
-  color: #666;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-}
-.login-tab.active {
-  color: #409eff;
-  border-bottom: 2px solid #409eff;
-}
-.close-btn {
+
+.login-dialog::before,
+.login-dialog::after {
   position: absolute;
-  right: 0;
+  content: '';
+  pointer-events: none;
+}
+
+.login-dialog::before {
   top: 0;
-  background: transparent;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  color: #999;
-  width: 40px;
-  height: 40px;
+  left: 0;
+  width: 72px;
+  height: 7px;
+  background: var(--geo-coral);
+}
+
+.login-dialog::after {
+  right: 0;
+  bottom: 0;
+  width: 7px;
+  height: 72px;
+  background: var(--geo-sky);
+}
+
+.dialog-kicker {
   display: flex;
   align-items: center;
-  justify-content: center;
+  margin: 2px 0 20px;
+  gap: 9px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.16em;
 }
-.form-item {
-  margin-bottom: 16px;
+
+.dialog-kicker span {
+  width: 24px;
+  height: 6px;
+  background: linear-gradient(90deg, var(--geo-coral) 0 55%, var(--geo-gold) 55%);
 }
-.form-item label {
-  display: block;
-  margin-bottom: 6px;
-  font-size: 14px;
-  color: #333;
-}
-.form-item input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-.form-item input:focus {
-  outline: none;
-  border-color: #409eff;
-}
-.verify-code-container {
+
+.login-dialog-header {
+  position: relative;
   display: flex;
+  align-items: center;
+  margin-bottom: 24px;
   gap: 10px;
 }
+
+.login-tab {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 46px;
+  box-sizing: border-box;
+  color: var(--geo-navy);
+  font-size: 15px;
+  font-weight: 800;
+  background: #fff;
+  border: 2px solid var(--geo-navy);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.login-tab:hover {
+  background: var(--geo-sky-light);
+}
+
+.login-tab.active {
+  color: var(--geo-navy);
+  background: var(--geo-gold);
+  box-shadow: 4px 4px 0 var(--geo-navy);
+  transform: translate(-2px, -2px);
+}
+
+.close-btn {
+  position: absolute;
+  top: -50px;
+  right: -15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  color: var(--geo-navy);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  background: var(--geo-coral-light);
+  border: 2px solid var(--geo-navy);
+  box-shadow: 3px 3px 0 var(--geo-navy);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.close-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--geo-navy);
+}
+
+.form-item {
+  margin-bottom: 18px;
+}
+
+.form-item label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--geo-navy);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.form-item input {
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  color: var(--geo-navy);
+  font-size: 14px;
+  font-weight: 600;
+  background: #fff;
+  border: 2px solid var(--geo-navy);
+  border-radius: 0;
+  outline: none;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.form-item input::placeholder {
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+
+.form-item input:focus {
+  background: var(--geo-gold-light);
+  box-shadow: 4px 4px 0 var(--geo-coral);
+  transform: translate(-2px, -2px);
+}
+
+.verify-code-container {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
 .verify-code-container input {
   flex: 1;
 }
+
 .captcha-img {
-  width: 110px;
-  height: 40px;
-  border-radius: 4px;
+  flex: none;
+  width: 112px;
+  height: 44px;
+  box-sizing: border-box;
+  background: var(--geo-sky-light);
+  border: 2px solid var(--geo-navy);
+  border-radius: 0;
+  box-shadow: 3px 3px 0 var(--geo-sky);
   cursor: pointer;
-  border: 1px solid #e5e7eb;
 }
+
 .captcha-placeholder {
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #f9fafb;
-  color: #666;
+  padding: 4px;
+  box-sizing: border-box;
+  color: var(--geo-navy);
   font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  background: var(--geo-sky-light);
   cursor: pointer;
 }
+
 .send-code-btn {
-  width: 110px;
-  height: 40px;
-  border: none;
-  border-radius: 4px;
-  background: #409eff;
-  color: #fff;
-  font-size: 14px;
+  flex: none;
+  width: 112px;
+  min-height: 44px;
+  color: var(--geo-navy);
+  font-size: 13px;
+  font-weight: 800;
+  background: var(--geo-sky);
+  border: 2px solid var(--geo-navy);
+  box-shadow: 3px 3px 0 var(--geo-navy);
   cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
+
+.send-code-btn:hover:not(:disabled) {
+  box-shadow: 5px 5px 0 var(--geo-navy);
+  transform: translate(-2px, -2px);
+}
+
 .send-code-btn:disabled {
-  background: #a0cfff;
+  color: var(--color-text-tertiary) !important;
+  background: var(--color-bg-tertiary) !important;
+  box-shadow: none;
+  opacity: 1;
   cursor: not-allowed;
 }
+
 .btn-group {
   display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  margin-top: 26px;
+  gap: 14px;
 }
+
 .btn-group button {
   flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
+  min-height: 48px;
+  padding: 0 16px;
+  color: var(--geo-navy);
+  font-size: 15px;
+  font-weight: 850;
+  border: 2px solid var(--geo-navy);
+  border-radius: 0;
   cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
 }
-.login-btn {
-  background: #409eff;
-  color: #fff;
+
+.btn-group .login-btn {
+  color: var(--geo-navy);
+  background: var(--geo-gold);
+  box-shadow: 5px 5px 0 var(--geo-navy);
 }
-.login-btn:disabled {
-  background: #a0cfff;
+
+.btn-group button:hover:not(:disabled) {
+  box-shadow: 7px 7px 0 var(--geo-navy);
+  transform: translate(-2px, -2px);
+}
+
+.btn-group button:disabled {
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-tertiary);
+  box-shadow: none;
   cursor: not-allowed;
 }
+
 .register-btn {
-  background: #f5f5f5;
-  color: #333;
-  border: 1px solid #ddd;
+  color: var(--geo-navy);
+  background: #fff;
+  box-shadow: 5px 5px 0 var(--geo-coral);
 }
-.register-btn:disabled {
-  background: #fafafa;
-  color: #999;
-  cursor: not-allowed;
-}
+
 .register-btn:hover:not(:disabled) {
-  background: #eee;
+  background: var(--geo-coral-light);
 }
+
 .login-btn.solo-btn {
   width: 100%;
   flex: none;
-}
-
-/* 新增：倒计时按钮禁用状态强化（避免视觉混淆） */
-.send-code-btn:disabled {
-  background: #e6f4ff !important;
-  color: #8cc5ff !important;
-  opacity: 0.9;
 }
 
 /* 弹窗过渡动画（确保弹窗显示隐藏流畅，不影响状态更新） */
@@ -761,21 +976,71 @@ const handleSubmit = async () => {
 }
 .dialog-fade-enter-active,
 .dialog-fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.18s ease;
 }
 .login-dialog {
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, opacity 0.18s ease;
 }
 .dialog-fade-enter-from .login-dialog,
 .dialog-fade-leave-to .login-dialog {
-  transform: translateY(-10px);
+  opacity: 0;
+  transform: translate(-8px, -8px);
 }
 
-/* 修复输入框禁用状态样式（避免与倒计时状态冲突） */
 .login-form input:disabled {
-  background: #f9f9f9;
-  color: #999;
-  border-color: #e0e0e0;
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-dark);
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px) {
+  .login-dialog-mask {
+    align-items: flex-start;
+    padding: 26px 16px;
+    overflow-y: auto;
+  }
+
+  .login-dialog {
+    width: 100%;
+    max-height: none;
+    padding: 24px 18px 22px;
+    box-shadow: 7px 7px 0 var(--geo-navy);
+  }
+
+  .dialog-kicker {
+    margin-bottom: 18px;
+  }
+
+  .close-btn {
+    right: -8px;
+  }
+
+  .login-dialog-header,
+  .verify-code-container,
+  .btn-group {
+    gap: 9px;
+  }
+
+  .send-code-btn,
+  .captcha-img {
+    width: 104px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar-wrapper,
+  .menu-item,
+  .login-tab,
+  .close-btn,
+  .form-item input,
+  .send-code-btn,
+  .btn-group button,
+  .dialog-fade-enter-active,
+  .dialog-fade-leave-active,
+  .login-dialog {
+    transition: none;
+  }
 }
 </style>
 
@@ -783,9 +1048,15 @@ const handleSubmit = async () => {
 <style>
 .user-popover {
   padding: 0 !important;
-  border-radius: 8px !important;
-  border: none !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+  overflow: visible !important;
+  background: #fff !important;
+  border: 2px solid var(--geo-navy) !important;
+  border-radius: 0 !important;
+  box-shadow: 6px 6px 0 var(--geo-navy) !important;
+}
+
+.user-popover .el-popper__arrow {
+  display: none !important;
 }
 </style>
 
