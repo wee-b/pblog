@@ -17,6 +17,7 @@ import com.pblog.common.domain.vo.AcRelationVO;
 import com.pblog.common.domain.vo.ArticleDetailVO;
 import com.pblog.common.domain.vo.ArticleVO;
 import com.pblog.common.domain.vo.CategoryVO;
+import com.pblog.common.storage.StorageUrlResolver;
 import com.pblog.admin.mapper.ACRelationMapper;
 import com.pblog.admin.mapper.ArticleMapper;
 import com.pblog.admin.service.ArticleService;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.annotation.Resource;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private ArticleMapper articleMapper;
     @Autowired
     private ACRelationMapper acRelationMapper;
+    @Resource
+    private StorageUrlResolver storageUrlResolver;
 
     @Override
     public PageResult pageQuery(ArticlePageQueryDTO pageQueryDTO) {
@@ -67,9 +71,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .collect(Collectors.toMap(AcRelationVO::getArticleId, AcRelationVO::getCategoryList));
 
         // 5. 遍历文章列表一次就赋值
-        articles.forEach(article ->
-                article.setCategories(articleIdToCategories.getOrDefault(article.getId(), Collections.emptyList()))
-        );
+        articles.forEach(article -> {
+            article.setCategories(articleIdToCategories.getOrDefault(article.getId(), Collections.emptyList()));
+            storageUrlResolver.resolveArticle(article);
+        });
 
         // 6. 构建完整分页结果
         return new PageResult(
@@ -92,10 +97,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         BeanUtils.copyProperties(articledto, article);
 
         String status = DefaultConstants.DEFAULT_STATUS;
-        if(url == "/insertDraft"){
+        if ("/insertDraft".equals(url)) {
             status = DefaultConstants.Draft_Status;
             // 不保存coverImage
             article.setCoverImage("");
+            article.setCoverFileId(null);
         }
 
         // 可调整
@@ -111,9 +117,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         articleMapper.insert(article);
 
-        if(articledto.getTagIds()!= null && articledto.getTagIds().size()>0){
+        if (articledto.getTags() != null && !articledto.getTags().isEmpty()) {
             // 插入标签数据
-            acRelationMapper.insertByCategoryIds(article.getId(),articledto.getTagIds());
+            List<Integer> tagIds = articledto.getTags().stream()
+                    .map(CategoryVO::getId)
+                    .toList();
+            acRelationMapper.insertByCategoryIds(article.getId(), tagIds);
         }
 
 
@@ -133,18 +142,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .set(Article::getStatus, DefaultConstants.DEFAULT_STATUS);  // 更新后需要审核
 
         // 保存草稿不会携带coverImage
-        if (articledto.getCoverImage() != null && !articledto.getCoverImage().equals("")) {
-            updateWrapper.set(Article::getCoverImage, articledto.getCoverImage());
+        if (articledto.getCoverFileId() != null) {
+            updateWrapper.set(Article::getCoverFileId, articledto.getCoverFileId());
         }
 
         // getTagIds空指针判断
-        if(articledto.getTagIds()!= null && articledto.getTagIds().size()>0){
+        if (articledto.getTags() != null && !articledto.getTags().isEmpty()) {
             // 删除该文章的所有旧关联
             LambdaQueryWrapper<AcRelation> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(AcRelation::getArticleId, articledto.getId());
             acRelationMapper.delete(wrapper);
             // 再插入新关联
-            acRelationMapper.insertByCategoryIds(articledto.getId(),articledto.getTagIds());
+            List<Integer> tagIds = articledto.getTags().stream()
+                    .map(CategoryVO::getId)
+                    .toList();
+            acRelationMapper.insertByCategoryIds(articledto.getId(), tagIds);
         }
 
         int rows = articleMapper.update(null, updateWrapper);
@@ -230,15 +242,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public List<ArticleVO> getFeaturedArticles() {
         List<ArticleVO> articlevos = articleMapper.selectFeaturedArticle();
+        articlevos.forEach(storageUrlResolver::resolveArticle);
         return articlevos;
     }
 
     @Override
     public ArticleDetailVO queryById(Integer id) {
         ArticleDetailVO article = articleMapper.getArticleDetail(id);
+        storageUrlResolver.resolveArticle(article);
         return article;
     }
-
 
 }
 

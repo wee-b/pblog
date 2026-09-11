@@ -6,6 +6,7 @@ export interface InsertArticleDTO {
     content: string;
     summary: string;
     coverImage: string;
+    coverFileId: number | null;
     tagIds: number[];
 }
 

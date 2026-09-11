@@ -44,6 +44,8 @@ public class Article implements Serializable {
      */
     private String coverImage;
 
+    private Long coverFileId;
+
     /**
      * 作者ID（关联pb_user）
      */

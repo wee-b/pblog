@@ -24,6 +24,7 @@ import com.pblog.common.utils.RandomCodeUtil;
 import com.pblog.common.utils.SecurityContextUtil;
 import com.pblog.common.domain.vo.UserAdminInfoVO;
 import com.pblog.common.domain.vo.UserInfoVO;
+import com.pblog.common.storage.StorageUrlResolver;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -54,6 +55,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Autowired
     private CodeService codeService;
+    @Autowired
+    private StorageUrlResolver storageUrlResolver;
 
 
     @Override
@@ -98,6 +101,7 @@ public class AdminServiceImpl implements AdminService {
         // 5. 组装信息并返回
         UserInfoVO userInfoVO = new UserInfoVO();
         BeanUtils.copyProperties(loginUser.getUser(),userInfoVO);
+        storageUrlResolver.resolveAvatar(userInfoVO);
         String userInfoJson = JSON.toJSONString(userInfoVO);
         Map<String, String> map = new HashMap<>();
         map.put("token", token);
@@ -159,6 +163,7 @@ public class AdminServiceImpl implements AdminService {
                     // 5. 组装信息并返回
                     UserInfoVO userInfoVO = new UserInfoVO();
                     BeanUtils.copyProperties(user,userInfoVO);
+                    storageUrlResolver.resolveAvatar(userInfoVO);
                     String userInfoJson = JSON.toJSONString(userInfoVO);
                     Map<String, String> map = new HashMap<>();
                     map.put("token", token);
@@ -230,6 +235,7 @@ public class AdminServiceImpl implements AdminService {
                     UserAdminInfoVO vo = new UserAdminInfoVO();
                     // 复制同名字段（源对象，目标对象）
                     BeanUtils.copyProperties(user, vo);
+                    storageUrlResolver.resolveAvatar(vo);
                     return vo;
                 })
                 .collect(Collectors.toList());

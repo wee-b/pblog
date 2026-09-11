@@ -50,6 +50,22 @@ aliyun:
     bucket-name: ${bin.aliyun.oss.bucket-name}
     url-expire-minutes: 30  # 签名URL有效期（分钟）
 
+# 图片对象存储实现。启动时读取，不支持运行时热切换。
+storage:
+  type: ${bin.storage.type:oss}  # oss 或 minio
+  file-access-base-url: ${bin.storage.file-access-base-url:http://localhost:8085/file}
+  oss:
+    enabled: ${bin.storage.oss.enabled:false}
+  minio:
+    enabled: ${bin.storage.minio.enabled:false}
+    endpoint: ${bin.storage.minio.endpoint:http://127.0.0.1:9000}
+    public-endpoint: ${bin.storage.minio.public-endpoint:${storage.minio.endpoint}}
+    access-key: ${bin.storage.minio.access-key}
+    secret-key: ${bin.storage.minio.secret-key}
+    bucket-name: ${bin.storage.minio.bucket-name:pblog}
+    public-read: ${bin.storage.minio.public-read:true}
+    url-expire-minutes: ${bin.storage.minio.url-expire-minutes:30}
+
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml  # Mapper.xml 文件路径

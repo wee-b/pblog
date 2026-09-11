@@ -20,6 +20,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -78,6 +79,7 @@ public class SecurityConfig {
         )
         // 配置URL权限规则
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.GET, "/file/*").permitAll()
                 // 无需权限路径
                 .requestMatchers(
                     "/error",

@@ -16,6 +16,8 @@ public class ArticleVO {
 
     private String coverImage;
 
+    private Long coverFileId;
+
     private String authorUsername;
     private String authorNickName;
 

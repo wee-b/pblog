@@ -97,6 +97,7 @@ CREATE TABLE `pb_user` (
     `nickname` varchar(50) DEFAULT NULL COMMENT '用户昵称',
     `email` varchar(100) DEFAULT NULL COMMENT '用户邮箱',
     `avatar_url` varchar(255) DEFAULT NULL COMMENT '用户头像路径',
+    `minio_url` varchar(255) DEFAULT NULL COMMENT 'MinIO用户头像对象Key',
     `status` char(1) NOT NULL DEFAULT '1' COMMENT '账号状态（0正常 1禁用）',
     `bio` varchar(500) DEFAULT '' COMMENT '用户简介',
     `last_login_at` datetime DEFAULT NULL COMMENT '最后登录时间',
@@ -111,6 +112,10 @@ CREATE TABLE `pb_user` (
     UNIQUE KEY `uk_email` (`email`),
     KEY `idx_status_del_flag` (`status`,`del_flag`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='博客用户表';
+
+ALTER TABLE `pb_user`
+    ADD COLUMN `avatar_file_id` bigint DEFAULT NULL AFTER `minio_url`,
+    ADD KEY `idx_avatar_file_id` (`avatar_file_id`);
 
 -- 2.2 文章表（id改为int，字符集utf8mb4）
 DROP TABLE IF EXISTS `pb_article`;
@@ -143,6 +148,11 @@ CREATE TABLE `pb_article` (
     KEY `idx_published_at` (`published_at`),
     KEY `idx_title` (`title`(50))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='博客文章表';
+
+ALTER TABLE `pb_article`
+    ADD COLUMN `cover_file_id` bigint DEFAULT NULL AFTER `cover_image`,
+    ADD KEY `idx_cover_file_id` (`cover_file_id`);
+
 
 -- 2.3 分类表（id改为int，字符集utf8mb4）
 DROP TABLE IF EXISTS `pb_category`;

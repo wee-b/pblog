@@ -30,6 +30,7 @@ export interface ArticleDetailVO {
     title: string;
     summary: string;
     coverImage: string;
+    coverFileId: number | null;
     authorUsername: string;
     authorNickname: string;
     viewCount: number;
@@ -56,6 +57,7 @@ export interface ArticleVO {
     title: string;
     summary: string;
     coverImage: string;
+    coverFileId: number | null;
     authorUsername: string;
     authorNickname: string;
     viewCount: number;

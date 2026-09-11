@@ -50,6 +50,13 @@ public class User implements Serializable {
     private String avatarUrl;
 
     /**
+     * MinIO 用户头像对象 Key
+     */
+    private String minioUrl;
+
+    private Long avatarFileId;
+
+    /**
      * 账号状态（0正常 1禁用）
      */
     private String status;

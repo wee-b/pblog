@@ -1,17 +1,20 @@
 package com.pblog.user.service.impl;
 
-import com.aliyun.oss.OSS;
-import com.aliyun.oss.model.ObjectMetadata;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.pblog.common.Expection.BusinessException;
+import com.pblog.common.domain.entity.StoredFile;
 import com.pblog.common.domain.entity.User;
+import com.pblog.common.domain.vo.FileUploadVO;
+import com.pblog.common.storage.FileAccessUrlBuilder;
+import com.pblog.common.storage.ObjectStorageService;
+import com.pblog.common.storage.StorageServiceRegistry;
 import com.pblog.common.utils.SecurityContextUtil;
+import com.pblog.user.mapper.StoredFileMapper;
 import com.pblog.user.mapper.UserMapper;
 import com.pblog.user.service.FileService;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,9 +24,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -49,19 +51,18 @@ public class FileServiceImpl implements FileService {
     // 文章图片压缩质量
     private static final float ARTICLE_IMAGE_QUALITY = 0.85f;
 
-    @Value("${aliyun.oss.bucket-name}")
-    private String bucketName;
-    @Value("${aliyun.oss.url-expire-minutes:30}")
-    private int urlExpireMinutes;
-
     @Autowired
-    private OSS ossClient;
+    private StorageServiceRegistry storageRegistry;
+    @Autowired
+    private FileAccessUrlBuilder fileAccessUrlBuilder;
+    @Autowired
+    private StoredFileMapper storedFileMapper;
     @Autowired
     private UserMapper userMapper;
 
 
     @Override
-    public String uploadImage(MultipartFile file) {
+    public FileUploadVO uploadImage(MultipartFile file) {
         try {
             // 1. 校验文章图片合法性
             validateArticleImageFile(file);
@@ -73,11 +74,12 @@ public class FileServiceImpl implements FileService {
             Integer userId = SecurityContextUtil.getUser().getId();
             String fileName = generateArticleImageFileName(file, userId);
 
-            // 4. 上传文件到阿里云OSS
-            uploadToOss(fileName, processedStream, file.getContentType());
+            // 4. 上传到配置文件选中的对象存储
+            ObjectStorageService storage = storageRegistry.getDefault();
+            uploadToStorage(storage, fileName, processedStream, file.getContentType());
 
-            // 5. 生成并返回访问URL
-            return generateSignedUrl(fileName);
+            // 5. 保存统一文件记录并返回稳定访问地址
+            return saveFileRecord(storage, fileName, file, "article");
 
         } catch (Exception e) {
             log.error("文章图片上传失败", e);
@@ -87,7 +89,7 @@ public class FileServiceImpl implements FileService {
 
 
     @Override
-    public String uploadAvatar(MultipartFile file) {
+    public FileUploadVO uploadAvatar(MultipartFile file) {
         try {
             // 1. 校验文件合法性
             validateImageFile(file);
@@ -97,21 +99,32 @@ public class FileServiceImpl implements FileService {
 
             // 3. 生成唯一文件名（避免重复）：用户ID/日期/UUID.后缀
             Integer userId = SecurityContextUtil.getUser().getId();
-            String fileName = generateAvatarFileName(file, userId);
+            String fileName = generateAvatarFileName(userId);
 
-            // 4. 上传文件到阿里云OSS
-            uploadToOss(fileName, processedStream, file.getContentType());
+            // 4. 上传到配置文件选中的对象存储
+            ObjectStorageService storage = storageRegistry.getDefault();
+            uploadToStorage(storage, fileName, processedStream, "image/jpeg");
 
             // TODO 删除原有的头像，或者最多保存9个历史头像
 
-            // 5. 更新用户对应的头像路径
-            LambdaUpdateWrapper<User> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-            lambdaUpdateWrapper.eq(User::getId, userId)
-                    .set(User::getAvatarUrl, fileName);
-            userMapper.update(null, lambdaUpdateWrapper);
+            // 5. 保存文件记录并更新用户头像引用
+            FileUploadVO uploadedFile = saveFileRecord(storage, fileName, file, "avatar");
+            try {
+                LambdaUpdateWrapper<User> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+                lambdaUpdateWrapper.eq(User::getId, userId)
+                        .set(User::getAvatarFileId, uploadedFile.getId());
+                userMapper.update(null, lambdaUpdateWrapper);
+            } catch (RuntimeException e) {
+                storedFileMapper.deleteById(uploadedFile.getId());
+                try {
+                    storage.delete(fileName);
+                } catch (RuntimeException cleanupException) {
+                    e.addSuppressed(cleanupException);
+                }
+                throw e;
+            }
 
-            // 6. 生成并返回头像访问URL
-            return generateSignedUrl(fileName);
+            return uploadedFile;
 
         } catch (Exception e) {
             log.error("头像上传失败", e);
@@ -120,16 +133,13 @@ public class FileServiceImpl implements FileService {
     }
 
     /**
-     * 上传文件到阿里云OSS
+     * 上传文件到启动时选中的对象存储
      */
-    private void uploadToOss(String objectKey, InputStream inputStream, String contentType) throws IOException {
-        ObjectMetadata metadata = new ObjectMetadata();
-        if (contentType != null) {
-            metadata.setContentType(contentType);
-        }
+    private void uploadToStorage(
+            ObjectStorageService storage, String objectKey,
+            InputStream inputStream, String contentType) throws IOException {
         byte[] bytes = inputStream.readAllBytes();
-        metadata.setContentLength(bytes.length);
-        ossClient.putObject(bucketName, objectKey, new ByteArrayInputStream(bytes), metadata);
+        storage.upload(objectKey, bytes, contentType);
     }
 
     /**
@@ -251,11 +261,11 @@ public class FileServiceImpl implements FileService {
     /**
      * 生成头像文件名（格式：avatars/用户ID/20241010/UUID.jpg）
      */
-    private String generateAvatarFileName(MultipartFile file, Integer userId) {
-        String suffix = getFileSuffix(file.getOriginalFilename());
+    private String generateAvatarFileName(Integer userId) {
         String dateDir = new SimpleDateFormat("yyyyMMdd").format(new Date());
         String uuid = UUID.randomUUID().toString().replaceAll("-", "");
-        return AVATAR_DIR + userId + "/" + dateDir + "/" + uuid + suffix;
+        // 头像处理流程固定编码为 JPEG，扩展名也必须与真实内容一致。
+        return AVATAR_DIR + userId + "/" + dateDir + "/" + uuid + ".jpg";
     }
 
     /**
@@ -283,21 +293,38 @@ public class FileServiceImpl implements FileService {
      * 根据 objectKey 生成带时效的签名URL（供外部调用，如刷新头像链接）
      */
     @Override
-    public String getSignedUrl(String objectKey) {
-        return generateSignedUrl(objectKey);
+    public String getAccessUrl(Long fileId) {
+        StoredFile storedFile = storedFileMapper.selectById(fileId);
+        if (storedFile == null || !"1".equals(storedFile.getStatus())) {
+            throw new BusinessException("文件不存在");
+        }
+        return storageRegistry.get(storedFile.getProvider()).getUrl(storedFile.getObjectKey());
     }
 
-    /**
-     * 生成带时效的OSS签名URL
-     */
-    private String generateSignedUrl(String objectKey) {
-        if (objectKey == null || objectKey.trim().isEmpty()) {
-            throw new IllegalArgumentException("图片文件名不能为空");
+    private FileUploadVO saveFileRecord(
+            ObjectStorageService storage, String objectKey,
+            MultipartFile source, String fileType) {
+        StoredFile storedFile = new StoredFile();
+        storedFile.setProvider(storage.getType());
+        storedFile.setObjectKey(objectKey);
+        storedFile.setOriginalName(source.getOriginalFilename());
+        storedFile.setContentType(source.getContentType());
+        storedFile.setFileSize(source.getSize());
+        storedFile.setFileType(fileType);
+        storedFile.setStatus("1");
+        storedFile.setCreateBy(SecurityContextUtil.getUser().getId());
+        storedFile.setCreateTime(LocalDateTime.now());
+        try {
+            storedFileMapper.insert(storedFile);
+            return new FileUploadVO(
+                    storedFile.getId(), fileAccessUrlBuilder.build(storedFile.getId()));
+        } catch (RuntimeException e) {
+            try {
+                storage.delete(objectKey);
+            } catch (RuntimeException cleanupException) {
+                e.addSuppressed(cleanupException);
+            }
+            throw e;
         }
-        String normalizedKey = objectKey.startsWith("/") ? objectKey.substring(1) : objectKey;
-        Calendar expiration = Calendar.getInstance();
-        expiration.add(Calendar.MINUTE, urlExpireMinutes);
-        URL signedUrl = ossClient.generatePresignedUrl(bucketName, normalizedKey, expiration.getTime());
-        return signedUrl.toString();
     }
 }

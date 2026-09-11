@@ -5,8 +5,10 @@ import com.aliyun.oss.OSSClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 
 @Configuration
+@ConditionalOnExpression("'${storage.type:oss}' == 'oss' || '${storage.oss.enabled:false}' == 'true'")
 public class AliyunOssConfig {
 
     @Value("${aliyun.oss.endpoint}")

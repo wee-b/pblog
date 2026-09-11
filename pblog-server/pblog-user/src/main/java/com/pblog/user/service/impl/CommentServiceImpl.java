@@ -11,6 +11,7 @@ import com.pblog.common.utils.SecurityContextUtil;
 import com.pblog.common.domain.vo.CommentForMeVO;
 import com.pblog.common.domain.vo.CommentFromMeVO;
 import com.pblog.common.domain.vo.CommentVO;
+import com.pblog.common.storage.StorageUrlResolver;
 import com.pblog.user.mapper.CommentMapper;
 import com.pblog.common.domain.entity.Comment;
 import com.pblog.user.service.CommentService;
@@ -27,6 +28,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
 	@Autowired
     private CommentMapper commentMapper;
+    @Autowired
+    private StorageUrlResolver storageUrlResolver;
 
 	@Override
     public PageResult pageQuery(PageQueryDTO pageQueryDTO) {
@@ -54,6 +57,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public List<CommentVO> all(Integer articleId) {
         List<CommentVO> lis = commentMapper.selectAllByArticleId(articleId);
+        lis.forEach(this::resolveAvatar);
         return lis;
     }
 
@@ -68,6 +72,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     public List<CommentForMeVO> forMe() {
         String username = SecurityContextUtil.getUsername();
         List<CommentForMeVO> lis = commentMapper.selectCommentsForMe(username);
+        lis.forEach(comment -> storageUrlResolver.resolveAvatar(comment.getUserInfoVO()));
         return lis;
     }
 
@@ -77,6 +82,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         CommentVO vo = new CommentVO();
         BeanUtils.copyProperties(one, vo);
         return vo;
+    }
+
+    private void resolveAvatar(CommentVO comment) {
+        storageUrlResolver.resolveAvatar(comment.getUserInfoVO());
     }
 
     @Override

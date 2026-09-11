@@ -1,13 +1,14 @@
 package com.pblog.user.service;
 
+import com.pblog.common.domain.vo.FileUploadVO;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileService {
 
-    String uploadAvatar(MultipartFile file);
+    FileUploadVO uploadAvatar(MultipartFile file);
 
-    String uploadImage(MultipartFile file);
+    FileUploadVO uploadImage(MultipartFile file);
 
-    String getSignedUrl(String objectKey);
+    String getAccessUrl(Long fileId);
 
 }

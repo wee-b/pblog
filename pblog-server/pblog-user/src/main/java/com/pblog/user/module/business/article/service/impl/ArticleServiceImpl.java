@@ -18,6 +18,7 @@ import com.pblog.common.domain.vo.AcRelationVO;
 import com.pblog.common.domain.vo.ArticleDetailVO;
 import com.pblog.common.domain.vo.ArticleVO;
 import com.pblog.common.domain.vo.CategoryVO;
+import com.pblog.common.storage.StorageUrlResolver;
 import com.pblog.user.module.business.article.mapper.ACRelationMapper;
 import com.pblog.user.module.business.article.mapper.ArticleMapper;
 import com.pblog.common.domain.entity.Article;
@@ -50,6 +51,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private ACRelationMapper acRelationMapper;
     @Resource
     private LikeCountMapper likeCountMapper;
+    @Resource
+    private StorageUrlResolver storageUrlResolver;
 
     @Override
     public PageResult pageQuery(ArticlePageQueryDTO pageQueryDTO) {
@@ -74,9 +77,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .collect(Collectors.toMap(AcRelationVO::getArticleId, AcRelationVO::getCategoryList));
 
         // 5. 遍历文章列表一次就赋值
-        articles.forEach(article ->
-                article.setCategories(articleIdToCategories.getOrDefault(article.getId(), Collections.emptyList()))
-        );
+        articles.forEach(article -> {
+            article.setCategories(articleIdToCategories.getOrDefault(article.getId(), Collections.emptyList()));
+            storageUrlResolver.resolveArticle(article);
+        });
 
         // 6. 构建完整分页结果
         return new PageResult(
@@ -99,10 +103,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         BeanUtils.copyProperties(articledto, article);
 
         String status = DefaultConstants.DEFAULT_STATUS;
-        if(url == "/insertDraft"){
+        if ("/insertDraft".equals(url)) {
             status = DefaultConstants.Draft_Status;
             // 不保存coverImage
             article.setCoverImage("");
+            article.setCoverFileId(null);
         }
 
         // 可调整
@@ -158,8 +163,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .set(Article::getStatus, DefaultConstants.DEFAULT_STATUS);  // 更新后需要审核
 
         // 保存草稿不会携带coverImage
-        if (articledto.getCoverImage() != null && !articledto.getCoverImage().equals("")) {
-            updateWrapper.set(Article::getCoverImage, articledto.getCoverImage());
+        if (articledto.getCoverFileId() != null) {
+            updateWrapper.set(Article::getCoverFileId, articledto.getCoverFileId());
         }
 
         // getTagIds空指针判断
@@ -247,15 +252,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public List<ArticleVO> getFeaturedArticles() {
         List<ArticleVO> articlevos = articleMapper.selectFeaturedArticle();
+        articlevos.forEach(storageUrlResolver::resolveArticle);
         return articlevos;
     }
 
     @Override
     public ArticleDetailVO queryById(Integer id) {
         ArticleDetailVO article = articleMapper.getArticleDetail(id);
+        storageUrlResolver.resolveArticle(article);
         return article;
     }
-
 
 }
 

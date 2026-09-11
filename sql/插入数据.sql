@@ -256,3 +256,47 @@ INSERT INTO `pb_comment` (
 (0, '1234567890', 5, 5, '1234567890','+1！我也是跟着教程做了一个爬虫项目，成功爬取了需要的数据','1', 20, '0', '2025-11-05 09:10:08'),
 (0, '1234567890', 0, 0, NULL,'请问可以定制开发一个小型电商网站吗？想了解具体的报价和周期','0', 3, '0', '2025-11-06 11:20:33'),
 (0, '1234567890', 0, 0, NULL,'测试删除功能的留言内容','1', 0, '1', '2025-11-07 13:40:25');
+
+
+
+
+INSERT INTO pb_user (
+    username,password,nickname,email,avatar_url,
+    minio_url,avatar_file_id,status,bio,last_login_at,
+    del_flag,create_by,create_time,update_by,update_time,
+    remark
+) VALUES (
+             '13800138000',
+             '$2a$10$btDDr.DtvPgSi16u8cFbbObWY/u.Zf9A.is5ilHOZDVWWSItnS7oS',
+             '测试用户',
+             '13800138000@test.com',
+             NULL,
+             NULL,
+             NULL,
+             '1',
+             '这是一条测试账号数据',
+             NOW(),
+             '0',
+             1,
+             CURRENT_TIMESTAMP,
+             1,
+             CURRENT_TIMESTAMP,
+             '测试账号：手机号13800138000'
+         );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

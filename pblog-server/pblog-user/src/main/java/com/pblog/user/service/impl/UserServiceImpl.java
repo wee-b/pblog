@@ -15,6 +15,7 @@ import com.pblog.common.domain.entity.rabc.PbUserRole;
 import com.pblog.common.utils.RandomCodeUtil;
 import com.pblog.common.utils.SecurityContextUtil;
 import com.pblog.common.domain.vo.UserInfoVO;
+import com.pblog.common.storage.StorageUrlResolver;
 import com.pblog.user.mapper.UserMapper;
 import com.pblog.user.mapper.UserRoleMapper;
 import com.pblog.user.service.CodeService;
@@ -61,6 +62,8 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private FileService fileService;
+    @Resource
+    private StorageUrlResolver storageUrlResolver;
 
     /**
      * 账号密码登录
@@ -108,8 +111,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 5. 组装信息并返回
-        UserInfoVO userInfoVO = new UserInfoVO();
-        BeanUtils.copyProperties(loginUser.getUser(),userInfoVO);
+        UserInfoVO userInfoVO = toUserInfoVO(loginUser.getUser());
         String userInfoJson = JSON.toJSONString(userInfoVO);
         Map<String, String> map = new HashMap<>();
         map.put("token", token);
@@ -171,8 +173,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 5. 组装信息并返回
-        UserInfoVO userInfoVO = new UserInfoVO();
-        BeanUtils.copyProperties(loginUser.getUser(),userInfoVO);
+        UserInfoVO userInfoVO = toUserInfoVO(loginUser.getUser());
         String userInfoJson = JSON.toJSONString(userInfoVO);
         Map<String, String> map = new HashMap<>();
         map.put("token", token);
@@ -333,7 +334,6 @@ public class UserServiceImpl implements UserService {
         LambdaUpdateWrapper<User> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
         lambdaUpdateWrapper.eq(User::getUsername, username)  // 条件
                 .set(User::getNickname, userDTO.getNickname())
-                .set(User::getAvatarUrl, userDTO.getAvatarUrl())
                 .set(User::getBio, userDTO.getBio());
 
         // TODO 同步更新文章里面作者的nickname
@@ -344,9 +344,9 @@ public class UserServiceImpl implements UserService {
         }
 
         // 返回更新后的用户json数据
-        UserInfoVO userInfoVO = new UserInfoVO();
-        BeanUtils.copyProperties(userDTO, userInfoVO);
-        userInfoVO.setUsername(username);
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("username", username);
+        UserInfoVO userInfoVO = toUserInfoVO(userMapper.selectOne(queryWrapper));
         String userInfoJson = JSON.toJSONString(userInfoVO);
         Map<String, String> map = new HashMap<>();
         map.put("userInfoJson",userInfoJson);
@@ -462,9 +462,7 @@ public class UserServiceImpl implements UserService {
     public UserInfoVO getUserInfo() {
 
         User user = SecurityContextUtil.getUser();
-        UserInfoVO userInfoVO = new UserInfoVO();
-        BeanUtils.copyProperties(user, userInfoVO);
-        return userInfoVO;
+        return toUserInfoVO(user);
     }
 
     @Override
@@ -473,9 +471,7 @@ public class UserServiceImpl implements UserService {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("username", username);
         User user = userMapper.selectOne(queryWrapper);
-        UserInfoVO userInfoVO = new UserInfoVO();
-        BeanUtils.copyProperties(user, userInfoVO);
-        return userInfoVO;
+        return toUserInfoVO(user);
     }
 
     @Override
@@ -486,6 +482,13 @@ public class UserServiceImpl implements UserService {
 
 
     // =======================================  private函数  =======================================
+
+    private UserInfoVO toUserInfoVO(User user) {
+        UserInfoVO userInfoVO = new UserInfoVO();
+        BeanUtils.copyProperties(user, userInfoVO);
+        storageUrlResolver.resolveAvatar(userInfoVO);
+        return userInfoVO;
+    }
 
 
     /**

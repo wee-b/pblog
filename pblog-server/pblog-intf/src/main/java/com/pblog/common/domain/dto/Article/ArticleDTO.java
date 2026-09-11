@@ -32,6 +32,7 @@ public class ArticleDTO {
      */
     private String coverImage;
 
+    private Long coverFileId;
 
     // 文章标签
     private List<CategoryVO> tags;

@@ -96,6 +96,7 @@ const article = reactive({
 const metaForm = reactive({
   summary: '',
   cover: '',
+  coverFileId: null as number | null,
   tagIds: [] as number[]
 });
 
@@ -177,8 +178,8 @@ const uploadLocalImages = async (content: string): Promise<string> => {
     try {
       // 上传本次缓存的单张图片
       const res = await uploadImage(file);
-      if (res.code === 200 && res.data) {
-        uploadResults.push({ oldUrl: blobUrl, newUrl: res.data });
+      if (res.code === 200 && res.data?.url) {
+        uploadResults.push({ oldUrl: blobUrl, newUrl: res.data.url });
       } else {
         ElMessage.error(`${file.name} 上传失败：${res.message || '接口异常'}`);
         uploadResults.push({ oldUrl: blobUrl, newUrl: blobUrl }); // 失败则保留原URL
@@ -235,6 +236,7 @@ const loadArticleDetails = async (id: string) => {
       // 填充元数据
       metaForm.summary = data.summary || '';
       metaForm.cover = data.coverImage || '';
+      metaForm.coverFileId = data.coverFileId || null;
 
       // 处理分类/标签
       if (data.categories && Array.isArray(data.categories)) {
@@ -264,6 +266,7 @@ const resetForm = () => {
 
   metaForm.summary = '';
   metaForm.cover = '';
+  metaForm.coverFileId = null;
   metaForm.tagIds = [];
   selectedTagIds.value = [];
 };
@@ -358,13 +361,14 @@ const uploadCoverImg = async (file: File) => {
 
     // 上传图片
     const res = await uploadImage(file);
-    if (res.code === 200 && res.data) {
-      metaForm.cover = res.data;
+    if (res.code === 200 && res.data?.url) {
+      metaForm.cover = res.data.url;
+      metaForm.coverFileId = res.data.id;
       // 释放旧的临时URL（编辑模式下的旧封面）
       if (metaForm.cover && metaForm.cover.startsWith('blob:')) {
         URL.revokeObjectURL(metaForm.cover);
       }
-      return res.data; // 返回真实URL，供发布逻辑使用
+      return res.data;
     } else {
       ElMessage.error(`${file.name} 上传失败：${res.message || '接口返回异常'}`);
       return null;
@@ -389,6 +393,7 @@ const handlePublishConfirm = async (formData: PublishFormData) => {
       content: formData.content,
       summary: formData.summary,
       coverImage: '',
+      coverFileId: null,
       tagIds: formData.tagIds
     };
     // 上传新添加的图片
@@ -397,11 +402,11 @@ const handlePublishConfirm = async (formData: PublishFormData) => {
     // 有选中封面文件时才上传
     if (formData.coverFile) {
       // 调用文件上传接口（FormData 格式）
-      const coverUrl = await uploadCoverImg(formData.coverFile);
-      payload.coverImage = coverUrl;
+      const uploadedCover = await uploadCoverImg(formData.coverFile);
+      payload.coverFileId = uploadedCover?.id || null;
     }else if (metaForm.cover && !metaForm.cover.startsWith('blob:')) {
       // 编辑模式：已有封面（非临时URL），直接复用
-      payload.coverImage = metaForm.cover;
+      payload.coverFileId = metaForm.coverFileId;
     }
 
     if (currentId.value) {

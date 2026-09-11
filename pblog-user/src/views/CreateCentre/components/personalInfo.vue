@@ -234,12 +234,12 @@ const uploadCoverImg = async (file: File) => {
     // 上传图片
     const res = await uploadAvatar(file);
     // {code:200,data:url,message:"操作成功"}
-    if (res.code === 200 && res.data) {
+    if (res.code === 200 && res.data?.url) {
       // 释放临时URL
       if (editForm.avatarUrl && editForm.avatarUrl.startsWith('blob:')) {
         URL.revokeObjectURL(editForm.avatarUrl);
       }
-      return res.data; // 返回真实URL
+      return res.data.url;
     } else {
       ElMessage.error(`${file.name} 上传失败：${res.message || '接口返回异常'}`);
       return null;

@@ -31,6 +31,7 @@
         <fastjson.version>2.0.34</fastjson.version>
         <jjwt.version>0.11.5</jjwt.version>
         <aliyun.oss.version>3.17.0</aliyun.oss.version>
+        <minio.version>8.5.17</minio.version>
     </properties>
 
     <dependencyManagement>
@@ -116,6 +117,13 @@
                 <version>${aliyun.oss.version}</version>
             </dependency>
 
+            <!-- MinIO -->
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
+            </dependency>
+
             <!-- Hutool 工具库 -->
             <dependency>
                 <groupId>cn.hutool</groupId>
@@ -161,4 +169,3 @@
     </dependencyManagement>
 
 </project>
-
