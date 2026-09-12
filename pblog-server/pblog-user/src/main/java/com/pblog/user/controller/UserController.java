@@ -1,6 +1,7 @@
 package com.pblog.user.controller;
 
 import com.pblog.common.domain.dto.EmailLoginDTO;
+import com.pblog.common.domain.dto.ChangePasswordDTO;
 import com.pblog.common.domain.dto.RegisterDTO;
 import com.pblog.common.domain.dto.ResetPasswordDTO;
 import com.pblog.common.domain.dto.UserDTO;
@@ -11,6 +12,7 @@ import com.pblog.common.domain.vo.UserInfoVO;
 import com.pblog.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -65,12 +67,13 @@ public class UserController {
     }
 
     /**
-     * 修改密码,登陆状态下,前端传入明文密码
+     * 登录状态下设置新密码，成功后当前令牌失效。
      */
-    @PutMapping("/forgetPassword")
-    public ResponseResult resetPassword(@RequestParam("newPassword")  String newPassword){
-        String username = userService.forgetPassword(newPassword);
-        return ResponseResult.success(username);
+    @PutMapping("/password")
+    public ResponseResult<String> changePassword(
+            @Valid @RequestBody ChangePasswordDTO changePasswordDTO) {
+        userService.changePassword(changePasswordDTO);
+        return ResponseResult.success("密码修改成功，请重新登录");
     }
 
     /**

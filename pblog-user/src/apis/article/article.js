@@ -33,7 +33,7 @@ export function deleteArticleById(id) {
     })
 }
 
-// 上架/下架文章，（0待审核 1已发布 2草稿）
+// 发布/下架文章（0历史待审核 1已发布 2草稿）
 export function enableDisableArticle(id) {
     const integerId = Number.isInteger(id) ? id : parseInt(id, 10);
     return request({

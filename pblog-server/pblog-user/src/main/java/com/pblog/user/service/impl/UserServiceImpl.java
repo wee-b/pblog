@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.pblog.common.Expection.BusinessException;
+import com.pblog.common.config.EmailVerificationProperties;
 import com.pblog.common.constant.DefaultConstants;
 import com.pblog.common.constant.RedisConstants;
 import com.pblog.common.constant.RoleConstant;
@@ -59,6 +60,8 @@ public class UserServiceImpl implements UserService {
     private UserRoleMapper userRoleMapper;
     @Autowired
     private CodeService codeService;
+    @Autowired
+    private EmailVerificationProperties emailVerificationProperties;
 
     @Resource
     private FileService fileService;
@@ -136,6 +139,8 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException("验证码错误或已过期"); // 自定义业务异常
         }
 
+        verifyEmailCodeIfEnabled(emailCodeDTO.getEmail(), emailCodeDTO.getCode());
+
         // 1.检查用户是否存在
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("email", emailCodeDTO.getEmail());
@@ -147,13 +152,6 @@ public class UserServiceImpl implements UserService {
         // 查询权限信息
         List<String> lis = userRoleMapper.selectRoleKeysByUserId(user.getId());
         LoginUser loginUser =  new LoginUser(user,lis);
-
-
-        // 2.校验邮箱验证码
-        codeService.verifyEmailCode(
-                RedisConstants.LOGIN_EmailCode_KEY + emailCodeDTO.getEmail(),
-                emailCodeDTO.getCode()
-        );
 
         // 3.手动创建认证对象，存入SecurityContextHolder
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -195,7 +193,6 @@ public class UserServiceImpl implements UserService {
                 user.setUsername(username);
                 user.setPassword(encodedPassword);
                 user.setEmail(email);
-                user.setAvatarUrl(DefaultConstants.DEFAULT_AVATAR_FILENAME);
                 user.setStatus(DefaultConstants.DEFAULT_STATUS);
                 user.setDelFlag(DefaultConstants.DEFAULT_DELFLAG);
                 int rows = userMapper.insert(user);
@@ -290,11 +287,7 @@ public class UserServiceImpl implements UserService {
                 throw new BusinessException("该邮箱已绑定用户，请更换邮箱");
             }
 
-            // 2.校验邮箱验证码
-            codeService.verifyEmailCode(
-                    RedisConstants.LOGIN_EmailCode_KEY + registerDTO.getEmail(),
-                    registerDTO.getCode()
-            );
+            verifyEmailCodeIfEnabled(registerDTO.getEmail(), registerDTO.getCode());
         }
 
         User user = emailRegister(registerDTO.getEmail());
@@ -396,17 +389,26 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String forgetPassword(String newPassword) {
-        // 获取当前登录用户
-        String username = SecurityContextUtil.getUsername();
+    public void changePassword(ChangePasswordDTO changePasswordDTO) {
+        User currentUser = userMapper.selectById(SecurityContextUtil.getUser().getId());
+        if (currentUser == null) {
+            throw new BusinessException("用户不存在");
+        }
+        if (passwordEncoder.matches(
+                changePasswordDTO.getNewPassword(), currentUser.getPassword())) {
+            throw new BusinessException("新密码不能与原密码相同");
+        }
 
-        String encodedPassword = passwordEncoder.encode(newPassword);
+        String encodedPassword = passwordEncoder.encode(changePasswordDTO.getNewPassword());
         LambdaUpdateWrapper<User> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        lambdaUpdateWrapper.eq(User::getUsername, username)  // 条件
-                .set(User::getPassword, encodedPassword);     // 更新
+        lambdaUpdateWrapper.eq(User::getId, currentUser.getId())
+                .set(User::getPassword, encodedPassword);
+        if (userMapper.update(null, lambdaUpdateWrapper) != 1) {
+            throw new BusinessException("密码修改失败");
+        }
 
-        userMapper.update(null, lambdaUpdateWrapper);
-        return username;
+        stringRedisTemplate.delete(RedisConstants.LOGIN_TOKEN_KEY + currentUser.getId());
+        SecurityContextHolder.clearContext();
     }
 
     @Override
@@ -482,6 +484,15 @@ public class UserServiceImpl implements UserService {
 
 
     // =======================================  private函数  =======================================
+
+    private void verifyEmailCodeIfEnabled(String email, String code) {
+        if (emailVerificationProperties.isEnabled()) {
+            codeService.verifyEmailCode(
+                    RedisConstants.LOGIN_EmailCode_KEY + email,
+                    code
+            );
+        }
+    }
 
     private UserInfoVO toUserInfoVO(User user) {
         UserInfoVO userInfoVO = new UserInfoVO();

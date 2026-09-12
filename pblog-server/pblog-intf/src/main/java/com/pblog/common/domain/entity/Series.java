@@ -29,10 +29,7 @@ public class Series implements Serializable {
      */
     private String seriesName;
 
-    /**
-     * 系列封面URL
-     */
-    private String coverImage;
+    private Long coverFileId;
 
     /**
      * 系列简介

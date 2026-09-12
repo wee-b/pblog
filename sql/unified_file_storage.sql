@@ -1,3 +1,4 @@
+-- Step 1: create the unified file table and add file ID reference columns.
 CREATE TABLE IF NOT EXISTS `pb_file` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `provider` varchar(16) NOT NULL COMMENT 'oss or minio',
@@ -15,5 +16,14 @@ CREATE TABLE IF NOT EXISTS `pb_file` (
     KEY `idx_create_by` (`create_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Unified file metadata';
 
+ALTER TABLE `pb_user`
+    ADD COLUMN `avatar_file_id` bigint DEFAULT NULL,
+    ADD KEY `idx_avatar_file_id` (`avatar_file_id`);
 
+ALTER TABLE `pb_article`
+    ADD COLUMN `cover_file_id` bigint DEFAULT NULL,
+    ADD KEY `idx_cover_file_id` (`cover_file_id`);
 
+ALTER TABLE `pb_series`
+    ADD COLUMN `cover_file_id` bigint DEFAULT NULL,
+    ADD KEY `idx_series_cover_file_id` (`cover_file_id`);

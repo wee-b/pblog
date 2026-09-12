@@ -115,7 +115,7 @@ VALUES
 
 
 INSERT INTO pblog.`pb_article` (
-    `title`, `content`, `summary`, `cover_image`, `author_username`,`author_nickName`,
+    `title`, `content`, `summary`, `cover_file_id`, `author_username`,`author_nickName`,
     `status`, `view_count`, `like_count`, `comment_count`,
     `sticky`, `featured`, `published_at`, `create_by`, `update_by`, `remark`
 ) VALUES
@@ -123,70 +123,70 @@ INSERT INTO pblog.`pb_article` (
 ('2025年前端开发趋势：Vue 3 + Vite 实战指南',
  '### 一、前言\n随着前端技术的快速迭代，Vue 3 已成为企业级项目的主流选择，结合 Vite 的极速构建能力，大幅提升开发效率。本文将从环境搭建、核心特性、实战案例三个维度，带你掌握 Vue 3 + Vite 的开发技巧。\n\n### 二、环境搭建\n1. 安装 Node.js（16+ 版本）\n2. 执行 npm create vite@latest my-vue3-app -- --template vue\n3. 进入项目目录：cd my-vue3-app\n4. 安装依赖：npm install\n5. 启动项目：npm run dev\n\n### 三、核心特性解析\n- Composition API：更灵活的代码组织方式\n- 响应式原理：基于 Proxy 的双向绑定\n- Vite 特性：按需编译、热模块替换\n\n### 四、实战案例\n实现一个 TodoList 应用，包含新增、删除、修改、筛选功能，完整演示 Composition API 的使用场景。',
  '本文详细介绍 2025 年前端主流技术 Vue 3 + Vite 的环境搭建、核心特性及实战案例，帮助开发者快速上手企业级前端开发。',
- '',
+ NULL,
  '1234567890','1234567890', '1', 2896, 156, 89, '1', '1', '2025-03-15 10:00:00', 123445, 123445, ''),
 
 -- 2. 置顶 文章（已发布）
 ('Java 并发编程实战：线程池优化与避坑指南',
  '### 一、线程池的核心价值\n线程池是 Java 并发编程的核心组件，通过复用线程减少创建销毁开销，提升系统吞吐量。但不合理的配置会导致死锁、OOM 等问题，本文结合实战经验讲解线程池优化方案。\n\n### 二、线程池核心参数\n1. corePoolSize：核心线程数\n2. maximumPoolSize：最大线程数\n3. keepAliveTime：空闲线程存活时间\n4. workQueue：任务队列\n5. handler：拒绝策略\n\n### 三、常见坑点与优化\n- 坑点 1：任务队列无界导致 OOM\n- 坑点 2：核心线程数设置过大导致上下文切换频繁\n- 优化方案：根据 CPU 核心数动态调整线程数，结合业务场景选择合适队列\n\n### 四、实战配置示例\n```java\nThreadPoolExecutor executor = new ThreadPoolExecutor(\n    4, 8, 60L, TimeUnit.SECONDS,\n    new ArrayBlockingQueue<>(1024),\n    new ThreadPoolExecutor.CallerRunsPolicy()\n);\n```',
  'Java 并发编程中线程池的核心参数解析、常见坑点及企业级优化方案，附实战配置代码，适合中高级 Java 开发者。',
- '',
+ NULL,
  '1234567890','1234567890', '1', 3210, 189, 105, '1', '0', '2025-02-28 14:30:00', 123445, 123445, ''),
 
 -- 3. 推荐 文章（已发布）
 ('MySQL 性能优化：索引设计与查询调优实战',
  '### 一、索引的本质\n索引是 MySQL 提升查询性能的关键，本质是一种数据结构（B+树），能快速定位数据。但过多索引会影响写入性能，需平衡查询与写入效率。\n\n### 二、索引设计原则\n1. 最左前缀匹配原则\n2. 避免过度索引（单表索引不超过 5 个）\n3. 对高频查询字段建立索引\n4. 避免对大字段建立索引\n\n### 三、查询调优技巧\n- 使用 EXPLAIN 分析执行计划\n- 避免 SELECT *，只查询需要的字段\n- 优化 JOIN 语句，确保关联字段有索引\n- 避免在 WHERE 子句中使用函数操作索引字段\n\n### 四、实战案例\n优化前查询耗时 3.2s，通过添加联合索引、重构 SQL 后，耗时降至 0.05s，详细讲解优化过程。',
  'MySQL 索引设计核心原则、查询调优技巧及真实项目优化案例，从原理到实战，帮助开发者解决数据库性能瓶颈。',
- '',
+ NULL,
  '1234567890','1234567890', '1', 4562, 218, 132, '0', '1', '2025-03-10 09:15:00', 123445, 123445, ''),
 
 -- 4. 已发布 文章（普通）
 ('Python 数据分析入门：Pandas + Matplotlib 实战',
  '### 一、环境准备\n1. 安装 Anaconda：包含 Python、Pandas、Matplotlib 等工具\n2. 验证环境：import pandas as pd; import matplotlib.pyplot as plt\n\n### 二、Pandas 核心操作\n- 读取数据：pd.read_csv("data.csv")\n- 数据清洗：缺失值处理、重复值删除\n- 数据筛选：loc/iloc 方法\n- 数据聚合：groupby 方法\n\n### 三、Matplotlib 可视化\n- 折线图：plt.plot(x, y)\n- 柱状图：plt.bar(x, y)\n- 饼图：plt.pie(data)\n- 图表美化：设置标题、坐标轴标签、图例\n\n### 四、实战案例\n分析某电商平台用户购买数据，挖掘用户消费习惯，生成可视化报表。',
  'Python 数据分析入门教程，详细讲解 Pandas 数据处理和 Matplotlib 数据可视化的核心操作，附实战案例。',
- '',
+ NULL,
  '1234567890','1234567890', '1', 1987, 96, 53, '0', '0', '2025-03-05 16:40:00', 123445, 123445, ''),
 
 -- 5. 已发布 文章（普通）
 ('Spring Boot 3.0 新特性详解与项目迁移指南',
  '### 一、Spring Boot 3.0 核心变化\n1. 基于 Spring Framework 6.0，最低支持 Java 17\n2. 原生支持 GraalVM 编译，提升启动速度\n3. 简化自动配置，支持自定义条件注解\n4. 增强安全特性，默认启用 HTTPS\n\n### 二、项目迁移步骤\n1. 升级 Java 版本至 17+\n2. 修改 pom.xml 中 Spring Boot 版本为 3.0.x\n3. 替换 deprecated API（如 WebSecurityConfigurerAdapter）\n4. 适配新的自动配置规则\n\n### 三、实战迁移案例\n将 Spring Boot 2.7 项目迁移至 3.0，解决遇到的依赖冲突、API 变更等问题，分享迁移经验。',
  'Spring Boot 3.0 新特性解析、Java 17 适配要求及旧项目迁移步骤，附实战案例，帮助开发者快速升级项目。',
- '',
+ NULL,
  '1234567890','1234567890', '1', 2678, 145, 78, '0', '0', '2025-02-20 11:20:00', 123445, 123445, ''),
 
 -- 6. 已发布 文章（普通）
 ('Flutter 跨平台开发实战：从零搭建一款购物 App',
  '### 一、Flutter 环境搭建\n1. 安装 Flutter SDK：https://flutter.dev/docs/get-started/install\n2. 配置环境变量：添加 Flutter 路径到 PATH\n3. 验证环境：flutter doctor\n4. 创建项目：flutter create shopping_app\n\n### 二、核心功能实现\n- 底部导航栏：BottomNavigationBar\n- 列表展示：ListView + Card\n- 网络请求：Dio 库\n- 状态管理：Provider\n- 本地存储：SharedPreferences\n\n### 三、打包发布\n- Android 打包：生成 APK/AAB 文件\n- iOS 打包：配置 Xcode 证书，生成 IPA 文件',
  '从零开始学习 Flutter 跨平台开发，搭建完整购物 App，包含底部导航、列表展示、网络请求、状态管理等核心功能。',
- '',
+ NULL,
  '1234567890','1234567890', '1', 1763, 89, 42, '0', '0', '2025-03-08 15:10:00', 123445, 123445, ''),
 
 -- 7. 已发布 文章（普通）
 ('前端性能优化：从加载、渲染到执行全链路优化',
  '### 一、加载阶段优化\n1. 资源压缩：JS/CSS/图片压缩\n2. 资源缓存：HTTP 缓存、Service Worker\n3. 懒加载：图片、组件懒加载\n4. CDN 加速：静态资源分发\n\n### 二、渲染阶段优化\n1. 减少 DOM 操作：批量更新、虚拟 DOM\n2. 避免重排重绘：使用 will-change、transform 等\n3. 优化 CSS 选择器：避免复杂选择器\n\n### 三、执行阶段优化\n1. 代码分割：按需加载代码\n2. 避免阻塞：异步加载脚本\n3. 优化算法：降低时间复杂度',
  '前端性能优化全指南，从加载、渲染到执行阶段的核心优化技巧，附实战案例和性能检测工具推荐。',
- '',
+ NULL,
  '1234567890','1234567890', '1', 2345, 121, 67, '0', '0', '2025-02-15 13:50:00', 123445, 123445, ''),
 
 -- 8. 草稿 文章（未发布）
 ('人工智能入门：机器学习基础算法详解',
  '### 一、机器学习概述\n机器学习是人工智能的核心，通过数据训练模型，让计算机具备自主学习能力。主要分为监督学习、无监督学习、强化学习三大类。\n\n### 二、基础算法解析\n1. 线性回归：用于预测连续值\n2. 逻辑回归：用于二分类问题\n3. 决策树：可解释性强，适合分类回归\n4. 聚类算法：K-Means、DBSCAN\n\n### 三、实战环境搭建\n1. 安装 Scikit-learn：pip install scikit-learn\n2. 安装 NumPy、SciPy：数据处理依赖\n3. 示例代码：线性回归模型训练与预测\n\n（待补充：算法数学原理、实战案例扩展）',
  '机器学习基础算法入门，包括线性回归、逻辑回归、决策树等核心算法解析，适合人工智能初学者。',
- '',
+ NULL,
  '1234567890','1234567890', '0', 0, 0, 0, '0', '0', NULL, 123445, 123445, ''),
 
 -- 9. 已下架 文章（过时内容）
 ('2024 年 Java 面试高频题汇总（附答案）',
  '### 一、基础部分\n1. Java 中的 == 和 equals 的区别？\n答：== 比较地址（基本类型比较值），equals 默认比较地址，可重写比较内容。\n2. 接口和抽象类的区别？\n答：接口多继承、方法无实现；抽象类单继承、可有普通方法。\n\n### 二、集合部分\n1. ArrayList 和 LinkedList 的区别？\n答：ArrayList 基于数组，查询快增删慢；LinkedList 基于链表，增删快查询慢。\n2. HashMap 的实现原理？\n答：JDK 1.8 后基于数组+链表+红黑树，默认初始容量 16，负载因子 0.75。\n\n### 三、并发部分\n1. 线程安全的集合有哪些？\n答：Vector、HashTable、ConcurrentHashMap 等。',
  '2024 年 Java 面试高频题汇总，涵盖基础、集合、并发、JVM 等核心知识点，附详细答案解析。',
- '',
+ NULL,
  '1234567890','1234567890', '2', 5678, 321, 189, '0', '0', '2024-12-01 09:00:00', 123445, 123445, ''),
 
 -- 10. 已发布 文章（普通）
 ('Redis 高级特性：缓存穿透、击穿、雪崩解决方案',
  '### 一、缓存三大问题解析\n1. 缓存穿透：查询不存在的数据，穿透到数据库\n2. 缓存击穿：热点 key 过期，大量请求打数据库\n3. 缓存雪崩：大量 key 同时过期，数据库压力骤增\n\n### 二、解决方案\n1. 缓存穿透：布隆过滤器、空值缓存\n2. 缓存击穿：互斥锁、热点 key 永不过期\n3. 缓存雪崩：key 过期时间随机化、集群部署、降级熔断\n\n### 三、实战配置\n以 Redis + Spring Boot 为例，实现布隆过滤器和互斥锁的代码示例，解决缓存三大问题。',
  'Redis 缓存穿透、击穿、雪崩三大问题的原理解析和企业级解决方案，附 Spring Boot 实战代码，适合后端开发者。',
- '',
+ NULL,
  '1234567890','1234567890', '1', 2987, 167, 93, '0', '0', '2025-03-02 17:20:00', 123445, 123445, '');
 
 
@@ -261,8 +261,7 @@ INSERT INTO `pb_comment` (
 
 
 INSERT INTO pb_user (
-    username,password,nickname,email,avatar_url,
-    minio_url,avatar_file_id,status,bio,last_login_at,
+    username,password,nickname,email,avatar_file_id,status,bio,last_login_at,
     del_flag,create_by,create_time,update_by,update_time,
     remark
 ) VALUES (
@@ -270,8 +269,6 @@ INSERT INTO pb_user (
              '$2a$10$btDDr.DtvPgSi16u8cFbbObWY/u.Zf9A.is5ilHOZDVWWSItnS7oS',
              '测试用户',
              '13800138000@test.com',
-             NULL,
-             NULL,
              NULL,
              '1',
              '这是一条测试账号数据',

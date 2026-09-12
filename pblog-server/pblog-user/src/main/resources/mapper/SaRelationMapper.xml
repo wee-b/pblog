@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pblog.user.module.business.series.mapper.SaRelationMapper">
+    <delete id="physicalDeleteBySeriesId">
+        DELETE FROM pb_sa_relation WHERE series_id = #{seriesId}
+    </delete>
+
+    <insert id="batchInsert">
+        INSERT INTO pb_sa_relation (series_id, article_id, sort_order, del_flag)
+        VALUES
+        <foreach collection="articleIds" item="articleId" index="index" separator=",">
+            (#{seriesId}, #{articleId}, #{index}, '0')
+        </foreach>
+    </insert>
+</mapper>

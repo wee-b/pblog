@@ -204,7 +204,7 @@ const submitComment = async ()=>{
       form.content = ''
       // 刷新
       await fetchComments();
-      ElMessage.success("留言发布成功,审核通过后可以展示")
+      ElMessage.success("留言发布成功")
     }else{
       ElMessage.success("留言发布失败")
     }

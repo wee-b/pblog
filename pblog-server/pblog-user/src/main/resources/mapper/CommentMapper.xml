@@ -17,8 +17,6 @@
         <association property="userInfoVO" javaType="com.pblog.common.domain.vo.UserInfoVO">
             <result column="username" property="username"/>
             <result column="nickname" property="nickname"/>
-            <result column="avatar_url" property="avatarUrl"/>
-            <result column="minio_url" property="minioUrl"/>
             <result column="avatar_file_id" property="avatarFileId"/>
         </association>
     </resultMap>
@@ -35,8 +33,6 @@
             c.create_time,
             c.username, -- 保留用户账号用于关联用户信息
             u.nickname,
-            u.avatar_url,
-            u.minio_url,
             u.avatar_file_id
         FROM pb_comment c
                  LEFT JOIN pb_user u ON c.username = u.username
@@ -67,8 +63,6 @@
         <association property="userInfoVO" javaType="com.pblog.common.domain.vo.UserInfoVO">
             <result column="comment_username" property="username"/>
             <result column="nickname" property="nickname"/>
-            <result column="avatar_url" property="avatarUrl"/>
-            <result column="minio_url" property="minioUrl"/>
             <result column="avatar_file_id" property="avatarFileId"/>
         </association>
     </resultMap>
@@ -101,8 +95,6 @@
             c.create_time,
             c.username AS comment_username,
             u.nickname,
-            u.avatar_url,
-            u.minio_url,
             u.avatar_file_id
         FROM pb_comment c
                  LEFT JOIN pb_article a ON c.article_id = a.id

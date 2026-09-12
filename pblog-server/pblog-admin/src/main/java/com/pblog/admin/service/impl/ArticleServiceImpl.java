@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -96,12 +97,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Article article = new Article();
         BeanUtils.copyProperties(articledto, article);
 
-        String status = DefaultConstants.DEFAULT_STATUS;
+        String status = DefaultConstants.Already_handout;
         if ("/insertDraft".equals(url)) {
             status = DefaultConstants.Draft_Status;
-            // 不保存coverImage
-            article.setCoverImage("");
             article.setCoverFileId(null);
+        } else {
+            article.setPublishedAt(LocalDateTime.now());
         }
 
         // 可调整
@@ -139,9 +140,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 .set(Article::getTitle, articledto.getTitle())
                 .set(Article::getContent, articledto.getContent())
                 .set(Article::getSummary, articledto.getSummary())
-                .set(Article::getStatus, DefaultConstants.DEFAULT_STATUS);  // 更新后需要审核
+                .set(Article::getPublishedAt, LocalDateTime.now())
+                .set(Article::getStatus, DefaultConstants.Already_handout);
 
-        // 保存草稿不会携带coverImage
+        // 保存草稿不会携带封面文件 ID
         if (articledto.getCoverFileId() != null) {
             updateWrapper.set(Article::getCoverFileId, articledto.getCoverFileId());
         }
@@ -173,7 +175,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
         // 更新条件：根据 id 定位（必须，否则会更新所有数据！）
         updateWrapper.eq(Article::getId, one.getId())
-                .set(Article::getStatus,status);
+                .set(Article::getStatus,status)
+                .set(Article::getPublishedAt, LocalDateTime.now());
 
         int rows = articleMapper.update(null, updateWrapper);
         return rows > 0;
@@ -186,15 +189,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         String status = "";
         Article one = articleMapper.selectById(id);
 
-        if(one.getStatus().equals(DefaultConstants.toInspect)){
-            // 待审核-->草稿  （取消投稿）
-            status = DefaultConstants.Draft_Status;
-        }else if(one.getStatus().equals(DefaultConstants.Already_handout)){
+        if(one.getStatus().equals(DefaultConstants.Already_handout)){
             // 已发布-->草稿  （下架）
             status = DefaultConstants.Draft_Status;
-        }else if(one.getStatus().equals(DefaultConstants.Draft_Status)){
-            // 草稿-->待审核  （投稿）
-            status = DefaultConstants.toInspect;
+        }else if(one.getStatus().equals(DefaultConstants.Draft_Status)
+                || one.getStatus().equals(DefaultConstants.toInspect)){
+            status = DefaultConstants.Already_handout;
         }
 
 
@@ -202,6 +202,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         // 更新条件：根据 id 定位（必须，否则会更新所有数据！）
         updateWrapper.eq(Article::getId, one.getId())
                 .set(Article::getStatus,status);
+        if (DefaultConstants.Already_handout.equals(status)) {
+            updateWrapper.set(Article::getPublishedAt, LocalDateTime.now());
+        }
 
         int rows = articleMapper.update(null, updateWrapper);
         return rows > 0;

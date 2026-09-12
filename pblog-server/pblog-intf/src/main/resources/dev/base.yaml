@@ -1,3 +1,10 @@
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
 spring:
   tomcat:
     threads:
@@ -86,6 +93,10 @@ mybatis-plus:
 
 
 # 自定义部分
+
+verification:
+  email-code:
+    enabled: ${bin.verification.email-code.enabled:false}
 
 login:
   time:

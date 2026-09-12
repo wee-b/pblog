@@ -121,7 +121,7 @@ const mockCommentsData = [
     userInfoVO: {
       username: "1234567890",
       nickname: "superAdmin",
-      avatarUrl: "http://192.168.150.103:9000/pblog/avatars/1/20251204/b_06664a7452c07b2ba68877312b7f0785.jpg",
+      avatarUrl: "",
       bio: null
     }
   }
@@ -229,7 +229,7 @@ const handlePostComment = async () => {
   try {
     const res = await insertComment(payload)
     if (res.data && res.data.code === 200) {
-      ElMessage.success('发表评论成功,审核通过后展示')
+      ElMessage.success('评论发布成功')
       newCommentContent.value = ''
       cancelReply() // 清空回复状态
       await fetchComments() // 重新加载评论

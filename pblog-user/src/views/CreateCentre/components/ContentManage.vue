@@ -212,15 +212,15 @@ import {
 // --- 常量定义 ---
 const STATUS_OPTIONS = [
   { label: '全部', value: '-1' },
-  { label: '草稿', value: '0' },
   { label: '已发布', value: '1' },
-  { label: '待审核', value: '2' }
+  { label: '草稿', value: '2' },
+  { label: '历史待审核', value: '0' }
 ]
 
 const STATUS_MAP = {
-  '0': { label: '草稿', class:  'status-info'},
+  '0': { label: '历史待审核', class: 'status-warning'},
   '1': { label: '已发布', class: 'status-success' },
-  '2': { label: '待审核', class: 'status-warning' }
+  '2': { label: '草稿', class: 'status-info' }
 }
 
 const router = useRouter()
@@ -313,12 +313,10 @@ const handleCommand = (command, row) => {
   }
 }
 const handleStatus = (status) =>{
-  if(status === '0'){
+  if(status === '0' || status === '2'){
     return '发布'
   }else if(status === '1'){
     return '下架'
-  }else if(status === '2'){
-    return '取消发布'
   }
 }
 
@@ -328,12 +326,10 @@ const handleStatus = (status) =>{
 const handleStatusChange = async (row) => {
   let actionText;
   const articleStatus = row.status
-  if(articleStatus === '0'){
+  if(articleStatus === '0' || articleStatus === '2'){
     actionText = '发布'
   }else if(articleStatus === '1'){
     actionText = '下架'
-  }else if(articleStatus === '2'){
-    actionText = '取消发布'
   }
 
 

@@ -44,16 +44,6 @@ public class User implements Serializable {
      */
     private String email;
 
-    /**
-     * 用户头像URL
-     */
-    private String avatarUrl;
-
-    /**
-     * MinIO 用户头像对象 Key
-     */
-    private String minioUrl;
-
     private Long avatarFileId;
 
     /**

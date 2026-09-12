@@ -12,8 +12,6 @@ public class UserAdminInfoVO {
     public String nickname;
     public String avatarUrl;
     @JsonIgnore
-    public String minioUrl;
-    @JsonIgnore
     public Long avatarFileId;
     public String email;
 

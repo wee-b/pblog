@@ -2,6 +2,7 @@ package com.pblog.user.controller;
 
 import cn.hutool.captcha.LineCaptcha;
 import com.pblog.common.constant.RedisConstants;
+import com.pblog.common.config.EmailVerificationProperties;
 import com.pblog.common.domain.result.ResponseResult;
 
 import com.pblog.common.domain.vo.CaptchaVO;
@@ -24,6 +25,13 @@ public class CodeController {
 
     @Autowired
     private CodeService codeService;
+    @Autowired
+    private EmailVerificationProperties emailVerificationProperties;
+
+    @GetMapping("/email/enabled")
+    public ResponseResult<Boolean> emailVerificationEnabled() {
+        return ResponseResult.successData(emailVerificationProperties.isEnabled());
+    }
 
     /**
      * 邮箱验证码发送

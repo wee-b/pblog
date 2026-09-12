@@ -88,6 +88,7 @@ public class SecurityConfig {
                     "/user/emailLoginOrRegister",
                     "/user/getUserInfoByUserName/**",
                     "/code/email/sendEmail",
+                    "/code/email/enabled",
                     "/code/picture/generate",
 
                     "/admin/passwordLogin",
@@ -95,6 +96,7 @@ public class SecurityConfig {
                     "/article/pageQuery",
                     "/article/queryById/**",
                     "/article/getFeaturedArticles",
+                    "/series/**",
                     "/category/all",
                     "/comment/all/{id}",
                     "/comment/insertRemark",
@@ -111,7 +113,7 @@ public class SecurityConfig {
                 // 普通用户权限（ROLE_USER）
                 .requestMatchers(
                         "/user/updateEmail",
-                        "/user/forgetPassword",
+                        "/user/password",
                         "/user/getUserInfo",
                         "/user/deleteAccount",
                         "/file/uploadAvatar",

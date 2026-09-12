@@ -56,7 +56,7 @@
           </div>
 
           <!-- 邮箱验证码模块 -->
-          <div class="form-item" v-if="loginType === 'email'">
+          <div class="form-item" v-if="loginType === 'email' && emailVerificationEnabled">
             <label>邮箱验证码</label>
             <div class="verify-code-container">
               <input
@@ -130,7 +130,7 @@
             <button
                 type="submit"
                 class="login-btn solo-btn"
-                :disabled="loading || !emailForm.emailCode || !emailForm.captchaUuid"
+                :disabled="loading || (emailVerificationEnabled && !emailForm.emailCode) || !emailForm.captchaUuid"
             >
               登录/注册
             </button>
@@ -144,7 +144,7 @@
 <script setup>
 import { ref, watch, onUnmounted, onDeactivated, computed } from 'vue';
 import UserApi from '@/apis/user/user.js';
-import { refreshCaptcha, sendEmailCode } from '@/apis/code.js';
+import { getEmailVerificationEnabled, refreshCaptcha, sendEmailCode } from '@/apis/code.js';
 import { registerLoginDialog, handleLoginSuccess, handleLoginFail, saveLoginInfo } from '@/utils/loginManager';
 import { ElMessage } from 'element-plus';
 
@@ -155,6 +155,7 @@ const emailReg = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
 const isVisible = ref(false);
 const loading = ref(false);
 const loginType = ref('account');
+const emailVerificationEnabled = ref(true);
 const passwordForm = ref({ username: '', password: '', captchaUuid: '', captchaCode: '' });
 const emailForm = ref({ email: '', emailCode: '', captchaUuid: '', captchaCode: '' });
 const codeBlobUrl = ref('');
@@ -229,6 +230,12 @@ const switchLoginType = (type) => {
 watch(isVisible, async (newVisible) => {
   console.log('弹窗显示状态:', newVisible);
   if (newVisible && !loading.value) {
+    try {
+      emailVerificationEnabled.value = await getEmailVerificationEnabled();
+    } catch (error) {
+      console.error('读取邮箱验证码配置失败:', error);
+      emailVerificationEnabled.value = true;
+    }
     await handleRefreshCaptcha();
   }
 });
@@ -332,7 +339,10 @@ const handleSubmit = async () => {
     else if (!currentForm.password) { ElMessage.warning('请输入密码'); valid = false; }
   } else {
     if (!isEmailValid.value) { ElMessage.warning('请输入有效邮箱'); valid = false; }
-    else if (!emailForm.value.emailCode) { ElMessage.warning('请输入邮箱验证码'); valid = false; }
+    else if (emailVerificationEnabled.value && !emailForm.value.emailCode) {
+      ElMessage.warning('请输入邮箱验证码');
+      valid = false;
+    }
   }
 
   if (!currentForm.captchaCode) { ElMessage.warning('请输入图形验证码'); valid = false; }

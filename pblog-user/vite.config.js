@@ -11,10 +11,10 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0', // 可选：解决本地局域网访问问题
-    open: true, // 可选：启动后自动打开浏览器
+    open: process.env.PBLOG_OPEN_BROWSER !== 'false', // 自动化或多实例调试时可关闭
     proxy: {
       '/api': {
-        target: 'http://localhost:8085',
+        target: process.env.PBLOG_API_TARGET || 'http://localhost:8085',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
         // 新增：如果后端是http协议，关闭https校验（开发环境）

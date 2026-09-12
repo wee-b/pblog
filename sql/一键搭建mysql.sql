@@ -88,6 +88,25 @@ CREATE TABLE `pb_user_role` (
 
 
 -- 二、博客业务核心表
+-- 2.0 统一文件表
+DROP TABLE IF EXISTS `pb_file`;
+CREATE TABLE `pb_file` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `provider` varchar(16) NOT NULL COMMENT 'oss或minio',
+    `object_key` varchar(512) NOT NULL COMMENT '对象Key',
+    `original_name` varchar(255) DEFAULT NULL COMMENT '原始文件名',
+    `content_type` varchar(128) DEFAULT NULL,
+    `file_size` bigint NOT NULL DEFAULT 0,
+    `file_type` varchar(32) NOT NULL,
+    `status` char(1) NOT NULL DEFAULT '1',
+    `create_by` int DEFAULT NULL,
+    `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_provider_object_key` (`provider`,`object_key`),
+    KEY `idx_file_create_by` (`create_by`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='统一文件元数据表';
+
 -- 2.1 用户表（id改为int，字符集utf8mb4）
 DROP TABLE IF EXISTS `pb_user`;
 CREATE TABLE `pb_user` (
@@ -96,8 +115,7 @@ CREATE TABLE `pb_user` (
     `password` varchar(100) NOT NULL COMMENT '密码（加密存储）',
     `nickname` varchar(50) DEFAULT NULL COMMENT '用户昵称',
     `email` varchar(100) DEFAULT NULL COMMENT '用户邮箱',
-    `avatar_url` varchar(255) DEFAULT NULL COMMENT '用户头像路径',
-    `minio_url` varchar(255) DEFAULT NULL COMMENT 'MinIO用户头像对象Key',
+    `avatar_file_id` bigint DEFAULT NULL COMMENT '头像文件ID',
     `status` char(1) NOT NULL DEFAULT '1' COMMENT '账号状态（0正常 1禁用）',
     `bio` varchar(500) DEFAULT '' COMMENT '用户简介',
     `last_login_at` datetime DEFAULT NULL COMMENT '最后登录时间',
@@ -110,12 +128,9 @@ CREATE TABLE `pb_user` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_username` (`username`),
     UNIQUE KEY `uk_email` (`email`),
-    KEY `idx_status_del_flag` (`status`,`del_flag`)
+    KEY `idx_status_del_flag` (`status`,`del_flag`),
+    KEY `idx_avatar_file_id` (`avatar_file_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='博客用户表';
-
-ALTER TABLE `pb_user`
-    ADD COLUMN `avatar_file_id` bigint DEFAULT NULL AFTER `minio_url`,
-    ADD KEY `idx_avatar_file_id` (`avatar_file_id`);
 
 -- 2.2 文章表（id改为int，字符集utf8mb4）
 DROP TABLE IF EXISTS `pb_article`;
@@ -124,7 +139,7 @@ CREATE TABLE `pb_article` (
     `title` varchar(200) NOT NULL COMMENT '文章标题',
     `content` longtext NOT NULL COMMENT '文章正文',
     `summary` varchar(500) DEFAULT '' COMMENT '文章摘要',
-    `cover_image` varchar(255) DEFAULT NULL COMMENT '文章封面URL',
+    `cover_file_id` bigint DEFAULT NULL COMMENT '封面文件ID',
     `author_username` varchar(50) NOT NULL COMMENT '作者账号（关联pb_user）',
     `author_nickname` varchar(50) NOT NULL COMMENT '作者昵称',
     `status` char(1) NOT NULL DEFAULT '0' COMMENT '文章状态 : 0草稿 1已发布 2待审核',
@@ -146,12 +161,9 @@ CREATE TABLE `pb_article` (
     PRIMARY KEY (`id`),
     KEY `idx_author_id_status` (`author_username`,`status`),
     KEY `idx_published_at` (`published_at`),
-    KEY `idx_title` (`title`(50))
+    KEY `idx_title` (`title`(50)),
+    KEY `idx_cover_file_id` (`cover_file_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='博客文章表';
-
-ALTER TABLE `pb_article`
-    ADD COLUMN `cover_file_id` bigint DEFAULT NULL AFTER `cover_image`,
-    ADD KEY `idx_cover_file_id` (`cover_file_id`);
 
 
 -- 2.3 分类表（id改为int，字符集utf8mb4）
@@ -186,7 +198,7 @@ DROP TABLE IF EXISTS `pb_series`;
 CREATE TABLE `pb_series` (
                              `id` int NOT NULL AUTO_INCREMENT COMMENT '系列ID，主键',
                              `series_name` varchar(100) NOT NULL COMMENT '系列名称',
-                             `cover_image` varchar(255) DEFAULT NULL COMMENT '系列封面URL',
+                             `cover_file_id` bigint DEFAULT NULL COMMENT '系列封面文件ID',
                              `description` varchar(500) DEFAULT '' COMMENT '系列简介',
                              `status` char(1) NOT NULL DEFAULT '0' COMMENT '系列状态（0正常 1禁用）',
                              `author_username` varchar(50) NOT NULL COMMENT '创建者账号（关联pb_user）',
@@ -197,7 +209,8 @@ CREATE TABLE `pb_series` (
                              `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
                              PRIMARY KEY (`id`),
                              UNIQUE KEY `uk_series_name_author` (`series_name`,`author_username`),
-                             KEY `idx_author_id_status` (`author_username`,`status`)
+                             KEY `idx_author_id_status` (`author_username`,`status`),
+                             KEY `idx_series_cover_file_id` (`cover_file_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='文章系列表';
 
 -- 2.6 系列-文章关联表

@@ -23,6 +23,7 @@
               :key="item.path"
               :to="item.path"
               class="nav-button"
+              :class="{ 'section-active': item.path === '/collection' && route.path.startsWith('/collection/') }"
               exact-active-class="active-link"
             >
               {{ item.name }}
@@ -332,6 +333,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll));
   box-shadow: 3px 3px 0 var(--geo-navy);
 }
 
+.nav-button.section-active,
 .nav-button.active-link {
   background: var(--geo-gold);
   border-color: var(--geo-navy);

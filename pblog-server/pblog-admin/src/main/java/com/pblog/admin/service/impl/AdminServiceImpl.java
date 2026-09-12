@@ -137,7 +137,6 @@ public class AdminServiceImpl implements AdminService {
                 user.setUsername(username);
                 user.setPassword(encodedPassword);
                 user.setEmail(null);
-                user.setAvatarUrl(DefaultConstants.DEFAULT_AVATAR_FILENAME);
                 user.setStatus(DefaultConstants.DEFAULT_STATUS);
                 user.setDelFlag(DefaultConstants.DEFAULT_DELFLAG);
                 int rows = userMapper.insert(user);

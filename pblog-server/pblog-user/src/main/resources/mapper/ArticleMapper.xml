@@ -12,7 +12,6 @@
         a.id ,
         a.title,
         a.summary,
-        a.cover_image,
         a.cover_file_id,
         a.author_username,
         a.author_nickName,
@@ -97,7 +96,6 @@
         <id column="article_id" property="id"/> <!-- 主表主键：文章ID（别名） -->
         <result column="title" property="title"/>
         <result column="summary" property="summary"/>
-        <result column="cover_image" property="coverImage"/>
         <result column="cover_file_id" property="coverFileId"/>
         <result column="author_username" property="authorUsername"/>
         <result column="author_nickName" property="authorNickName"/>
@@ -128,7 +126,6 @@
         a.id as article_id,
         a.title,
         a.summary,
-        a.cover_image,
         a.cover_file_id,
         a.author_username,
         a.author_nickName,
@@ -167,7 +164,6 @@
         a.id as article_id,
         a.title,
         a.summary,
-        a.cover_image,
         a.cover_file_id,
         a.author_username,
         a.author_nickName,

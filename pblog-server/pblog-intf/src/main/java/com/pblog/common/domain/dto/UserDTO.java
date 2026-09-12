@@ -13,11 +13,6 @@ public class UserDTO implements Serializable {
     private String nickname;
 
     /**
-     * 用户头像URL
-     */
-    private String avatarUrl;
-
-    /**
      * 用户简介
      */
     private String bio;

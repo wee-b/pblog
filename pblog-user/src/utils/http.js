@@ -17,12 +17,16 @@ const NO_TOKEN_WHITE_LIST = [
     "/api/user/emailLoginOrRegister",
     "/api/user/getUserInfoByUserName/**",
     "/api/code/email/sendEmail",
+    "/api/code/email/enabled",
     "/api/code/picture/generate",
     "/api/admin/login",
     "/api/admin/addPerson" ,
     "/api/article/pageQuery",
     "/api/article/queryById/**",
     "/api/article/getFeaturedArticles",
+    "/api/series/pageQuery",
+    "/api/series/queryById/**",
+    "/api/series/featured",
     "/api/category/all",
     "/api/comment/all/{id}",
     "/api/comment/insertRemark",
@@ -36,9 +40,13 @@ http.interceptors.request.use(
         console.log('发送请求：', config.method.toUpperCase(), config.baseURL + config.url);
 
         // 核心逻辑：1. 判断是否在白名单 → 2. 不在则注入 Token
+        const requestPath = (config.url || '').split('?')[0];
         const isWhiteList = NO_TOKEN_WHITE_LIST.some(whitePath => {
-            // 匹配规则：接口路径是否以白名单路径结尾（适配带参数的场景，例：/auth/captcha?uuid=xxx）
-            return config.url.endsWith(whitePath);
+            const normalizedPath = whitePath.replace(/^\/api/, '');
+            if (normalizedPath.endsWith('/**')) {
+                return requestPath.startsWith(normalizedPath.slice(0, -3));
+            }
+            return requestPath === normalizedPath || requestPath.endsWith(normalizedPath);
         });
 
         if (!isWhiteList) { // 不在白名单中，才添加 Token

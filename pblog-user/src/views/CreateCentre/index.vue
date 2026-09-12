@@ -32,7 +32,12 @@
             <el-icon><Document /></el-icon>
             <span>内容管理</span>
           </el-menu-item>
-          <!-- 4. 数据概览 -->
+          <!-- 4. 合集管理 -->
+          <el-menu-item index="SeriesManage">
+            <el-icon><Collection /></el-icon>
+            <span>合集管理</span>
+          </el-menu-item>
+          <!-- 5. 数据概览 -->
           <el-menu-item index="StatsView">
             <el-icon><DataLine /></el-icon>
             <span>数据概览</span>
@@ -65,11 +70,12 @@
 <script setup>
 import { ref, shallowRef } from 'vue'
 import { useRouter } from 'vue-router'
-import { EditPen, DataLine, Document, ChatDotRound, HomeFilled, User } from '@element-plus/icons-vue'
+import { EditPen, DataLine, Document, ChatDotRound, HomeFilled, User, Collection } from '@element-plus/icons-vue'
 
 import personalInfo from './components/personalInfo.vue'
 import CommentManage from './components/CommentManage.vue'
 import ContentManage from './components/ContentManage.vue'
+import SeriesManage from './components/SeriesManage.vue'
 import StatsView from './components/StatsView.vue'
 
 const router = useRouter()
@@ -79,6 +85,7 @@ const componentsMap = shallowRef({
   personalInfo,
   CommentManage,
   ContentManage,
+  SeriesManage,
   StatsView
 })
 

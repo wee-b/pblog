@@ -392,7 +392,6 @@ const handlePublishConfirm = async (formData: PublishFormData) => {
       title: formData.title,
       content: formData.content,
       summary: formData.summary,
-      coverImage: '',
       coverFileId: null,
       tagIds: formData.tagIds
     };
@@ -426,7 +425,7 @@ const handlePublishConfirm = async (formData: PublishFormData) => {
       const res = await insertArticle(payload);
 
       if (res.data.code === 200 && res.data) {
-        ElMessage.success('发布成功，请耐心等待审核');
+        ElMessage.success('文章发布成功');
         dialogVisible.value = false;
 
         currentId.value = res.data;

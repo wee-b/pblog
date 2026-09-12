@@ -24,6 +24,11 @@ export const getCaptcha = async () => {
 
 export const refreshCaptcha = async () => getCaptcha();
 
+export const getEmailVerificationEnabled = async () => {
+    const response = await http.get('/code/email/enabled');
+    return response.data?.data === true;
+};
+
 // 邮箱验证码函数（移除所有 ElMessage 提示，仅保留错误抛出）
 export const sendEmailCode = async (receiveEmail) => {
     if (!/^[\w.-]+@[a-zA-Z0-9-]+\.[a-zA-Z]+$/.test(receiveEmail)) {
@@ -38,4 +43,4 @@ export const sendEmailCode = async (receiveEmail) => {
     return response.data;
 };
 
-export default { getCaptcha, refreshCaptcha, sendEmailCode };
+export default { getCaptcha, refreshCaptcha, getEmailVerificationEnabled, sendEmailCode };

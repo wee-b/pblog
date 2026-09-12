@@ -77,6 +77,23 @@ export interface ArticleVO {
     status: string;
 }
 
+export interface SeriesVO {
+    id: number;
+    seriesName: string;
+    coverFileId: number | null;
+    coverImage: string | null;
+    description: string;
+    status: string;
+    authorUsername: string;
+    articleCount: number;
+    createTime: string;
+    updateTime: string;
+}
+
+export interface SeriesDetailVO extends SeriesVO {
+    articles: (ArticleVO & { sortOrder: number })[];
+}
+
 
 
 

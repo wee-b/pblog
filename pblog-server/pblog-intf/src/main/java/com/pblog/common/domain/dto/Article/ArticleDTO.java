@@ -27,11 +27,6 @@ public class ArticleDTO {
      */
     @Size(max = 500, message = "文章摘要长度不能超过500字")
     private String summary;
-    /**
-     * 文章封面URL
-     */
-    private String coverImage;
-
     private Long coverFileId;
 
     // 文章标签

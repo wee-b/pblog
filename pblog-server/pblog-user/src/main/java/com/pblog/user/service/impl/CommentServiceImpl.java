@@ -107,7 +107,8 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
 
 
-        comment.setStatus(DefaultConstants.toInspect);
+        // 用户评论和留言无需后台审核，提交后直接发布。
+        comment.setStatus(DefaultConstants.Already_handout);
         comment.setLikeCount(DefaultConstants.ZERO);
         comment.setDelFlag(DefaultConstants.DEFAULT_DELFLAG);
 

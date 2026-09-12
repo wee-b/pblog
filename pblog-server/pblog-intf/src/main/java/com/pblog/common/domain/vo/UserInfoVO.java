@@ -10,8 +10,6 @@ public class UserInfoVO {
     public String nickname;
     public String avatarUrl;
     @JsonIgnore
-    public String minioUrl;
-    @JsonIgnore
     public Long avatarFileId;
     public String bio;
 }

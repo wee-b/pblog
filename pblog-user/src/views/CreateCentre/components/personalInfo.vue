@@ -61,7 +61,7 @@
         </div>
         <div class="action">
           <el-button link type="danger" @click="handleResetPassword">
-            重置密码
+            修改密码
           </el-button>
         </div>
       </div>
@@ -126,6 +126,51 @@
         </span>
       </template>
     </el-dialog>
+
+    <el-dialog
+        v-model="passwordDialogVisible"
+        title="修改登录密码"
+        width="460px"
+        :close-on-click-modal="false"
+        align-center
+    >
+      <el-form
+          ref="passwordFormRef"
+          :model="passwordForm"
+          :rules="passwordRules"
+          label-width="90px"
+      >
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input
+              v-model="passwordForm.newPassword"
+              type="password"
+              autocomplete="new-password"
+              show-password
+              placeholder="请输入6到64位新密码"
+          />
+        </el-form-item>
+        <el-form-item label="确认密码" prop="confirmPassword">
+          <el-input
+              v-model="passwordForm.confirmPassword"
+              type="password"
+              autocomplete="new-password"
+              show-password
+              placeholder="请再次输入新密码"
+              @keyup.enter="handleChangePassword"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="passwordDialogVisible = false">取消</el-button>
+        <el-button
+            type="primary"
+            :loading="passwordSaving"
+            @click="handleChangePassword"
+        >
+          确认修改
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -133,7 +178,13 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { CameraFilled, Edit, User, Message, Lock, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { getUserInfo, checkLogin ,saveUserInfoJson} from '@/utils/loginManager.js'
+import {
+  getUserInfo,
+  checkLogin,
+  logout,
+  saveUserInfoJson,
+  showLogin
+} from '@/utils/loginManager.js'
 
 import UserApi from '@/apis/user/user.js'
 import { uploadAvatar, uploadImage } from '@/apis/file.js'
@@ -159,6 +210,9 @@ const isLoading = ref(false)
 const dialogVisible = ref(false)
 const saving = ref(false)
 const formRef = ref<any>(null)
+const passwordDialogVisible = ref(false)
+const passwordSaving = ref(false)
+const passwordFormRef = ref<any>(null)
 
 // 编辑表单数据
 const localImage = ref<File | null>(null)
@@ -168,12 +222,36 @@ const editForm = reactive({
   bio: '',
 })
 
+const passwordForm = reactive({
+  newPassword: '',
+  confirmPassword: ''
+})
+
+const validateConfirmPassword = (_rule: any, value: string, callback: (error?: Error) => void) => {
+  if (value !== passwordForm.newPassword) {
+    callback(new Error('两次输入的新密码不一致'))
+    return
+  }
+  callback()
+}
+
 // 表单校验规则
 const rules = {
   nickname: [
     { required: true, message: '昵称不能为空', trigger: 'blur' },
     { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' },
   ],
+}
+
+const passwordRules = {
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, max: 64, message: '新密码长度必须为6到64位', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请再次输入新密码', trigger: 'blur' },
+    { validator: validateConfirmPassword, trigger: ['blur', 'change'] }
+  ]
 }
 
 // 打开弹窗
@@ -263,11 +341,9 @@ const handleSaveProfile = async () => {
 
     saving.value = true
 
-    // 🌟 关键修改：提前定义包含 avatarUrl 的完整类型（可选属性）
     const updateData: {
       nickname: string;
       bio: string;
-      avatarUrl?: string; // 可选属性，避免类型报错
     } = {
       nickname: editForm.nickname,
       bio: editForm.bio
@@ -280,16 +356,12 @@ const handleSaveProfile = async () => {
       const uploadRes = await uploadCoverImg(localImage.value)
       if (uploadRes) {
         newAvatarUrl = uploadRes // 替换为服务器返回的真实URL
-        updateData.avatarUrl = newAvatarUrl // 此时添加 avatarUrl 不会报错
         editForm.avatarUrl = newAvatarUrl // 同步更新表单里的URL
       } else {
         ElMessage.error("头像上传失败")
         saving.value = false
         return // 上传失败则终止提交
       }
-    } else {
-      // 没有新头像时，使用原有的真实URL
-      updateData.avatarUrl = userInfo.value.avatarUrl
     }
 
     // 调用更新用户信息接口
@@ -356,10 +428,37 @@ const handleChangeEmail = () => {
   ElMessage.warning('跳转到邮箱验证流程...')
 }
 
-// TODO 重置密码
 const handleResetPassword = () => {
-  // 这里可以跳转到密码重置页面或打开密码重置弹窗
-  ElMessage.warning('触发重置密码安全验证...')
+  passwordForm.newPassword = ''
+  passwordForm.confirmPassword = ''
+  passwordDialogVisible.value = true
+  requestAnimationFrame(() => passwordFormRef.value?.clearValidate())
+}
+
+const handleChangePassword = async () => {
+  if (!passwordFormRef.value || passwordSaving.value) return
+  const valid = await passwordFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  passwordSaving.value = true
+  try {
+    const res = await UserApi.changePassword({
+      newPassword: passwordForm.newPassword
+    })
+    if (res.data?.code !== 200) {
+      ElMessage.error(res.data?.message || '密码修改失败')
+      return
+    }
+
+    passwordDialogVisible.value = false
+    logout()
+    ElMessage.success('密码修改成功，请重新登录')
+    setTimeout(() => showLogin(), 300)
+  } catch (error: any) {
+    ElMessage.error(error.response?.data?.message || '密码修改失败，请重试')
+  } finally {
+    passwordSaving.value = false
+  }
 }
 
 // 组件挂载时加载用户信息

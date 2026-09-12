@@ -2,6 +2,7 @@ package com.pblog.user.service;
 
 
 import com.pblog.common.domain.dto.EmailLoginDTO;
+import com.pblog.common.domain.dto.ChangePasswordDTO;
 import com.pblog.common.domain.dto.RegisterDTO;
 import com.pblog.common.domain.dto.ResetPasswordDTO;
 import com.pblog.common.domain.dto.UserDTO;
@@ -28,7 +29,7 @@ public interface UserService {
 
     String updateEmail(EmailCodeDTO emailCodeDTO);
 
-    String forgetPassword(String newPassword);
+    void changePassword(ChangePasswordDTO changePasswordDTO);
 
     String logout();
 

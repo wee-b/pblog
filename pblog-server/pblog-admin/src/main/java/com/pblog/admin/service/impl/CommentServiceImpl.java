@@ -102,7 +102,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         }
 
 
-        comment.setStatus(DefaultConstants.toInspect);
+        comment.setStatus(DefaultConstants.Already_handout);
         comment.setLikeCount(DefaultConstants.ZERO);
         comment.setDelFlag(DefaultConstants.DEFAULT_DELFLAG);
 

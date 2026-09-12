@@ -43,11 +43,11 @@ const UserApi = {
     });
   },
 
-  forgetPassword: (newPassword) => {
+  changePassword: (params) => {
     return http({
-      url: '/user/forgetPassword',
+      url: '/user/password',
       method: 'PUT',
-      params: { newPassword }
+      data: params
     });
   },
 

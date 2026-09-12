@@ -26,6 +26,16 @@ const router = createRouter({
           component: () => import("../views/AllBlogs/index.vue")
         },
         {
+          path: "collection",
+          name: "collections",
+          component: () => import("../views/AllCollections/index.vue")
+        },
+        {
+          path: "collection/:id",
+          name: "collectionDetail",
+          component: () => import("../views/CollectionDetail/index.vue")
+        },
+        {
           path: "remark",
           name: "remark",
           component: () => import("../views/remark/index.vue")

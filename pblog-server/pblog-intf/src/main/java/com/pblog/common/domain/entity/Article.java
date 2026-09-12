@@ -39,11 +39,6 @@ public class Article implements Serializable {
      */
     private String summary;
 
-    /**
-     * 文章封面URL
-     */
-    private String coverImage;
-
     private Long coverFileId;
 
     /**

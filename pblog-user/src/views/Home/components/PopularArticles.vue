@@ -28,7 +28,7 @@ const articles = ref([
     "id": 1,
     "title": "推荐文章加载失败",
     "summary": "加载失败，加载失败，加载失败，加载失败，加载失败，加载失败，加载失败，加载失败",
-    "coverImage": "https://pblog-cover.oss-cn-hangzhou.aliyuncs.com/vue3-vite.jpg",
+    "coverImage": "",
     "authorId": 123445,
     "viewCount": 2896,
     "likeCount": 156,
