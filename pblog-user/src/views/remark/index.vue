@@ -1,12 +1,38 @@
 <template>
   <div class="wall-container">
-    <div class="wall-header">
-      <h1>🎢 留言墙</h1>
-      <p>记录此刻的想法</p>
-    </div>
+    <header class="wall-header">
+      <div class="header-copy">
+        <div class="eyebrow"><span></span> GUESTBOOK / 04</div>
+        <h1>留言<span>墙</span></h1>
+        <p>把路过此刻的想法，留成一张会翻面的彩色卡片。</p>
+        <div class="wall-count"><strong>{{ commentTree.length }}</strong><span>张公开留言</span></div>
+      </div>
+      <div class="header-shapes" aria-hidden="true">
+        <span class="shape-square"></span>
+        <span class="shape-circle"></span>
+        <span class="shape-triangle"></span>
+      </div>
+    </header>
 
     <!-- 留言列表 -->
-    <div class="card-grid">
+    <main class="wall-content">
+      <div class="section-heading">
+        <div><b>01</b><span><small>MESSAGES</small>留言卡片</span></div>
+        <p>点击卡片翻面，查看或写下回复</p>
+      </div>
+
+      <div v-if="isLoading" class="wall-state">
+        <span class="state-shape"></span>
+        <strong>正在打捞留言...</strong>
+      </div>
+
+      <div v-else-if="commentTree.length === 0" class="wall-state">
+        <span class="state-shape"></span>
+        <strong>留言墙还是空的</strong>
+        <p>来留下第一张彩色卡片吧。</p>
+      </div>
+
+      <div v-else class="card-grid">
       <div
           v-for="item in commentTree"
           :key="item.id"
@@ -36,7 +62,7 @@
 
               <div class="actions">
                 <div class="action-btn" @click.stop="handleLike(item)">
-                  <el-icon><HeartFilled v-if="item.isLiked" /><Heart v-else /></el-icon>
+                  <span class="heart-icon">{{ item.isLiked ? '♥' : '♡' }}</span>
                   <span>{{ item.likeCount }}</span>
                 </div>
               </div>
@@ -86,7 +112,8 @@
 
         </div>
       </div>
-    </div>
+      </div>
+    </main>
 
     <!-- 悬浮发布按钮 -->
     <div class="fab-container" @click="openPostDialog">
@@ -99,7 +126,8 @@
         v-model="dialogVisible"
         title="留下一张卡片"
         width="90%"
-        style="max-width: 500px; border-radius: 16px;"
+        class="remark-dialog"
+        style="max-width: 500px;"
         align-center
         destroy-on-close
     >
@@ -119,12 +147,12 @@
           </el-form-item>
         </div>
 
-        <p class="random-tip">🎨 卡片颜色将随机生成</p>
+        <p class="random-tip"><span></span> 卡片颜色将随机生成</p>
       </el-form>
 
       <template #footer>
-        <el-button @click="dialogVisible = false" round>取消</el-button>
-        <el-button type="primary" @click="submitComment" round color="#333" :loading="submitting">
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitComment" :loading="submitting">
           发布
         </el-button>
       </template>
@@ -617,4 +645,133 @@ onMounted(() => {
 .bg-green .transparent-textarea :deep(.el-textarea__inner)::placeholder { color: rgba(0,0,0,0.4); }
 .bg-pink .mini-avatar, .bg-green .mini-avatar { background: rgba(0,0,0,0.1); color: #333; }
 .bg-pink .action-btn, .bg-green .action-btn { background: rgba(0,0,0,0.05); color: #333; }
+</style>
+
+<style scoped>
+.wall-container {
+  min-height: calc(100vh - 68px);
+  padding: 0 0 110px;
+  color: var(--geo-navy, #1a1a2e);
+  background-color: #fff;
+  background-image:
+    linear-gradient(rgba(26, 26, 46, .04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 46, .04) 1px, transparent 1px);
+  background-size: 46px 46px;
+  font-family: inherit;
+}
+
+.wall-header {
+  position: relative;
+  display: flex;
+  min-height: 330px;
+  margin: 0;
+  padding: 64px clamp(24px, 8vw, 120px);
+  overflow: hidden;
+  align-items: center;
+  box-sizing: border-box;
+  color: var(--geo-navy, #1a1a2e);
+  text-align: left;
+  background: rgba(255, 255, 255, .92);
+  border-bottom: 3px solid var(--geo-navy, #1a1a2e);
+}
+
+.header-copy { position: relative; z-index: 2; max-width: 670px; }
+.eyebrow { display: flex; margin-bottom: 16px; align-items: center; gap: 10px; color: var(--geo-coral-dark, #d9485f); font-size: 11px; font-weight: 950; letter-spacing: .18em; }
+.eyebrow span { width: 38px; height: 8px; background: linear-gradient(90deg, var(--geo-coral, #ff6b6b) 0 58%, var(--geo-sky, #53bde8) 58%); border: 1px solid var(--geo-navy, #1a1a2e); }
+.wall-header h1 { margin: 0; font-size: clamp(52px, 7vw, 88px); font-weight: 950; line-height: .95; letter-spacing: -.08em; }
+.wall-header h1 span { color: var(--geo-gold, #ffd54f); -webkit-text-stroke: 2px var(--geo-navy, #1a1a2e); }
+.wall-header p { max-width: 520px; margin: 24px 0 0; color: var(--color-text-secondary, #555568); font-size: 16px; line-height: 1.8; }
+.wall-count { display: inline-flex; margin-top: 28px; align-items: stretch; border: 2px solid var(--geo-navy, #1a1a2e); box-shadow: 5px 5px 0 var(--geo-sky, #53bde8); }
+.wall-count strong { display: grid; min-width: 52px; padding: 8px 12px; place-items: center; color: #fff; font-size: 24px; background: var(--geo-navy, #1a1a2e); }
+.wall-count span { display: grid; padding: 8px 14px; place-items: center; font-size: 12px; font-weight: 850; background: var(--geo-gold-light, #fff5c2); }
+
+.header-shapes span { position: absolute; display: block; z-index: 1; border: 3px solid var(--geo-navy, #1a1a2e); }
+.shape-square { top: 54px; right: 14%; width: 104px; height: 104px; background: var(--geo-coral, #ff6b6b); box-shadow: 10px 10px 0 var(--geo-navy, #1a1a2e); transform: rotate(12deg); }
+.shape-circle { right: 7%; bottom: 52px; width: 78px; height: 78px; background: var(--geo-sky, #53bde8); border-radius: 50%; }
+.shape-triangle { right: 27%; bottom: 34px; width: 90px; height: 82px; background: var(--geo-gold, #ffd54f); clip-path: polygon(50% 0, 100% 100%, 0 100%); transform: rotate(-9deg); }
+
+.wall-content { max-width: 1280px; margin: 0 auto; padding: 58px 28px 0; }
+.section-heading { display: flex; margin-bottom: 34px; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.section-heading > div { display: flex; align-items: center; gap: 14px; }
+.section-heading b { display: grid; width: 50px; height: 50px; place-items: center; color: #fff; background: var(--geo-navy, #1a1a2e); border: 2px solid var(--geo-navy, #1a1a2e); box-shadow: 6px 6px 0 var(--geo-gold, #ffd54f); }
+.section-heading span { font-size: 26px; font-weight: 950; line-height: 1; }
+.section-heading small { display: block; margin-bottom: 6px; color: var(--geo-coral-dark, #d9485f); font-size: 9px; letter-spacing: .16em; }
+.section-heading p { margin: 0; color: var(--color-text-muted, #777); font-size: 13px; }
+
+.card-grid { max-width: none; margin: 0; gap: 28px; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); }
+.flip-card-container { aspect-ratio: 1 / .94; }
+.flip-card-inner { border-radius: 0; box-shadow: 8px 8px 0 var(--geo-navy, #1a1a2e); transition: transform .55s cubic-bezier(.2, .75, .25, 1), box-shadow .2s ease; }
+.flip-card-container:hover .flip-card-inner { box-shadow: 12px 12px 0 var(--geo-navy, #1a1a2e); }
+.flip-card-inner.is-flipped { transform: rotateY(180deg); }
+.card-face { padding: 24px; color: var(--geo-navy, #1a1a2e); background: var(--card-color, var(--geo-gold, #ffd54f)); border: 3px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+.card-face::after { position: absolute; top: 17px; right: 17px; width: 22px; height: 22px; content: ''; background: rgba(255, 255, 255, .72); border: 2px solid var(--geo-navy, #1a1a2e); transform: rotate(11deg); }
+.card-back { background: var(--card-color, var(--geo-gold, #ffd54f)); backdrop-filter: none; }
+.quote-icon { top: -16px; left: -5px; color: var(--geo-navy, #1a1a2e); font-size: 68px; opacity: .18; }
+.content-text { font-size: 17px; font-weight: 800; line-height: 1.7; }
+.mini-avatar { color: var(--geo-navy, #1a1a2e); background: rgba(255, 255, 255, .7); border: 2px solid var(--geo-navy, #1a1a2e); }
+.nickname { font-weight: 900; }
+.time { opacity: .65; }
+.action-btn { padding: 5px 10px; color: var(--geo-navy, #1a1a2e); background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 3px 3px 0 rgba(26, 26, 46, .35); }
+.action-btn:hover { background: var(--geo-gold-light, #fff5c2); transform: translate(-1px, -1px); }
+.heart-icon { font-size: 18px; line-height: 1; }
+.reply-display h3, .reply-label { font-weight: 900; opacity: 1; }
+.reply-text { padding: 13px; color: var(--geo-navy, #1a1a2e); background: rgba(255, 255, 255, .75); border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+.reply-meta, .tip-text { font-weight: 750; opacity: .7; }
+.reply-btn { color: var(--geo-navy, #1a1a2e); font-weight: 900; background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 3px 3px 0 var(--geo-navy, #1a1a2e); }
+.reply-btn:hover { color: var(--geo-navy, #1a1a2e); background: var(--geo-gold-light, #fff5c2); }
+.card-back .transparent-textarea :deep(.el-textarea__inner) { padding: 10px; color: var(--geo-navy, #1a1a2e); background: rgba(255, 255, 255, .8) !important; border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+.card-back .transparent-textarea :deep(.el-textarea__inner)::placeholder { color: rgba(26, 26, 46, .48); }
+
+.bg-blue { --card-color: var(--geo-sky, #53bde8); background: var(--card-color); }
+.bg-purple { --card-color: #b8a7ff; background: var(--card-color); }
+.bg-pink { --card-color: var(--geo-coral, #ff6b6b); background: var(--card-color); }
+.bg-orange { --card-color: #ff9d58; background: var(--card-color); color: var(--geo-navy, #1a1a2e); text-shadow: none; }
+.bg-green { --card-color: #7ed7a5; background: var(--card-color); color: var(--geo-navy, #1a1a2e); }
+.bg-dark { --card-color: #bbbcc8; background: var(--card-color); }
+.bg-teal { --card-color: #62d7cd; background: var(--card-color); }
+.bg-indigo { --card-color: var(--geo-gold, #ffd54f); background: var(--card-color); }
+.bg-pink .card-body, .bg-green .card-body,
+.bg-pink .mini-avatar, .bg-green .mini-avatar,
+.bg-pink .action-btn, .bg-green .action-btn { color: var(--geo-navy, #1a1a2e); }
+
+.wall-state { display: grid; min-height: 280px; padding: 40px; box-sizing: border-box; place-items: center; align-content: center; text-align: center; background: #fff; border: 2px dashed var(--geo-navy, #1a1a2e); }
+.wall-state .state-shape { width: 56px; height: 56px; margin-bottom: 22px; background: var(--geo-gold, #ffd54f); border: 2px solid var(--geo-navy, #1a1a2e); box-shadow: 6px 6px 0 var(--geo-coral, #ff6b6b); transform: rotate(8deg); }
+.wall-state strong { font-size: 20px; }
+.wall-state p { margin: 8px 0 0; color: var(--color-text-muted, #777); }
+
+.fab-container { right: 36px; bottom: 34px; height: 52px; padding: 0 20px; color: var(--geo-navy, #1a1a2e); font-weight: 900; background: var(--geo-gold, #ffd54f); border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 6px 6px 0 var(--geo-navy, #1a1a2e); transition: transform .2s ease, box-shadow .2s ease; }
+.fab-container:hover { color: var(--geo-navy, #1a1a2e); background: var(--geo-coral, #ff6b6b); box-shadow: 9px 9px 0 var(--geo-navy, #1a1a2e); transform: translate(-3px, -3px); }
+
+.preview-box { padding: 22px; background: var(--card-color, var(--geo-sky, #53bde8)); border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 6px 6px 0 var(--geo-navy, #1a1a2e); }
+.preview-box .transparent-textarea :deep(.el-textarea__inner) { color: var(--geo-navy, #1a1a2e); font-weight: 750; }
+.preview-box .transparent-textarea :deep(.el-textarea__inner)::placeholder { color: rgba(26, 26, 46, .5); }
+.random-tip { display: flex; margin-top: 17px; align-items: center; justify-content: center; gap: 8px; color: var(--geo-navy, #1a1a2e); font-weight: 800; }
+.random-tip span { width: 22px; height: 7px; background: linear-gradient(90deg, var(--geo-coral, #ff6b6b) 0 50%, var(--geo-sky, #53bde8) 50%); border: 1px solid var(--geo-navy, #1a1a2e); }
+
+@media (max-width: 760px) {
+  .wall-header { min-height: 300px; padding: 46px 22px; }
+  .wall-header h1 { font-size: 54px; }
+  .header-shapes { opacity: .24; }
+  .shape-square { right: -28px; }
+  .shape-circle { right: 12px; }
+  .shape-triangle { display: none !important; }
+  .wall-content { padding: 42px 18px 0; }
+  .section-heading { align-items: flex-start; flex-direction: column; }
+  .section-heading p { padding-left: 66px; }
+  .card-grid { grid-template-columns: 1fr; }
+  .flip-card-container { aspect-ratio: 1 / .9; }
+  .fab-container { right: 20px; bottom: 22px; }
+}
+</style>
+
+<style>
+.remark-dialog { border: 3px solid var(--geo-navy, #1a1a2e) !important; border-radius: 0 !important; box-shadow: 10px 10px 0 var(--geo-coral, #ff6b6b) !important; }
+.remark-dialog .el-dialog__header { padding: 20px 24px; background: var(--geo-gold-light, #fff5c2); border-bottom: 3px solid var(--geo-navy, #1a1a2e); }
+.remark-dialog .el-dialog__title { color: var(--geo-navy, #1a1a2e); font-size: 22px; font-weight: 950; }
+.remark-dialog .el-dialog__headerbtn { top: 13px; right: 15px; width: 34px; height: 34px; background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); }
+.remark-dialog .el-dialog__close { color: var(--geo-navy, #1a1a2e); }
+.remark-dialog .el-dialog__body { padding: 24px; }
+.remark-dialog .el-dialog__footer { padding: 17px 24px 23px; border-top: 2px solid var(--geo-navy, #1a1a2e); }
+.remark-dialog .el-button { height: 38px; color: var(--geo-navy, #1a1a2e); font-weight: 900; background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 3px 3px 0 var(--geo-sky, #53bde8); }
+.remark-dialog .el-button--primary { background: var(--geo-gold, #ffd54f); border-color: var(--geo-navy, #1a1a2e); box-shadow: 4px 4px 0 var(--geo-navy, #1a1a2e); }
 </style>

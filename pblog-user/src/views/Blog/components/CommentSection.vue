@@ -1,7 +1,11 @@
 <template>
   <el-card class="comment-card mt-4" shadow="never" id="comment-section">
     <div class="comment-header">
-      <h3>评论 ({{ totalCount }})</h3>
+      <div class="comment-title">
+        <b>03</b>
+        <h3><small>DISCUSSION</small>评论区 <em>{{ totalCount }}</em></h3>
+      </div>
+      <p>认真交流，也欢迎不同的声音。</p>
     </div>
 
     <!-- 发表评论框 -->
@@ -26,11 +30,6 @@
 
     <!-- 评论列表 -->
     <div class="comment-list" v-loading="loading">
-      <!-- 调试信息：方便排查数据问题 -->
-      <div v-if="!loading" class="debug-info">
-        原始评论数：{{ commentList.length }} | 树形评论数：{{ commentTree.length }}
-      </div>
-
       <div v-for="item in commentTree" :key="item.id" class="comment-item">
         <!-- 根评论 -->
         <div class="root-comment">
@@ -38,7 +37,7 @@
           <div class="comment-content-box">
             <div class="comment-info">
               <span class="nickname">{{ item.userInfoVO.nickname }}</span>
-              <span class="time">{{ formatDate(item.create_time) }}</span>
+              <span class="time">{{ formatDate(item.createTime || item.create_time) }}</span>
             </div>
             <p class="text">{{ item.content }}</p>
             <div class="comment-actions">
@@ -55,10 +54,10 @@
             <div class="comment-content-box">
               <div class="comment-info">
                 <span class="nickname">{{ sub.userInfoVO.nickname }}</span>
-                <span class="reply-text" v-if="sub.to_reply_username">
-                   回复 <span class="at-user">@{{ sub.to_reply_username }}</span>
+                <span class="reply-text" v-if="sub.toReplyUsername || sub.to_reply_username">
+                   回复 <span class="at-user">@{{ sub.toReplyUsername || sub.to_reply_username }}</span>
                  </span>
-                <span class="time">{{ formatDate(sub.create_time) }}</span>
+                <span class="time">{{ formatDate(sub.createTime || sub.create_time) }}</span>
               </div>
               <p class="text">{{ sub.content }}</p>
               <div class="comment-actions">
@@ -424,5 +423,65 @@ watch(() => props.articleId, () => {
 
 .mr-3 {
   margin-right: 12px;
+}
+</style>
+
+<style scoped lang="scss">
+.comment-card {
+  margin-top: 42px;
+  padding: 0;
+  color: var(--geo-navy, #1a1a2e);
+  background: #fff;
+  border: 3px solid var(--geo-navy, #1a1a2e);
+  border-radius: 0;
+  box-shadow: 10px 10px 0 var(--geo-sky, #53bde8);
+}
+
+.comment-card :deep(.el-card__body) { padding: clamp(24px, 4vw, 42px); }
+.comment-header { display: flex; margin-bottom: 28px; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.comment-title { display: flex; align-items: center; gap: 14px; }
+.comment-title b { display: grid; width: 48px; height: 48px; place-items: center; color: #fff; background: var(--geo-navy, #1a1a2e); box-shadow: 6px 6px 0 var(--geo-coral, #ff6b6b); }
+.comment-title h3 { margin: 0; color: var(--geo-navy, #1a1a2e); font-size: 24px; font-weight: 950; line-height: 1; }
+.comment-title h3 small { display: block; margin-bottom: 5px; color: var(--geo-coral-dark, #d9485f); font-size: 8px; letter-spacing: .15em; }
+.comment-title h3 em { display: inline-grid; min-width: 24px; height: 24px; margin-left: 5px; place-items: center; color: var(--geo-navy, #1a1a2e); font-size: 12px; font-style: normal; background: var(--geo-gold, #ffd54f); border: 1px solid var(--geo-navy, #1a1a2e); }
+.comment-header > p { margin: 0; color: var(--color-text-muted, #777); font-size: 12px; }
+
+.comment-input-wrapper { margin: 0 0 28px; padding: 20px; align-items: flex-start; background: var(--geo-gold-light, #fff5c2); border: 2px solid var(--geo-navy, #1a1a2e); box-shadow: 6px 6px 0 var(--geo-navy, #1a1a2e); }
+.comment-input-wrapper :deep(.el-avatar), .comment-avatar { color: var(--geo-navy, #1a1a2e); background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); }
+.comment-input-wrapper .input-box :deep(.el-textarea__inner) { min-height: 88px; padding: 12px; color: var(--geo-navy, #1a1a2e); background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: none; }
+.comment-input-wrapper .input-box :deep(.el-textarea__inner:focus) { background: var(--geo-sky-light, #dff5ff); box-shadow: 4px 4px 0 var(--geo-sky, #53bde8); }
+.comment-input-wrapper .input-actions { display: flex; margin-top: 12px; justify-content: flex-end; gap: 10px; }
+.comment-input-wrapper .input-actions :deep(.el-button) { height: 36px; margin: 0; padding: 0 13px; color: var(--geo-navy, #1a1a2e); font-weight: 900; background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+.comment-input-wrapper .input-actions :deep(.el-button--primary) { background: var(--geo-gold, #ffd54f); box-shadow: 4px 4px 0 var(--geo-navy, #1a1a2e); }
+.comment-card :deep(.el-divider) { margin: 32px 0; border-color: var(--geo-navy, #1a1a2e); border-width: 2px 0 0; }
+
+.comment-list .comment-item { margin: 0; padding: 24px 0; border-bottom: 2px solid var(--geo-navy, #1a1a2e); }
+.comment-list .comment-item:first-child { padding-top: 0; }
+.comment-list .comment-item:last-child { padding-bottom: 0; border-bottom: 0; }
+.root-comment { gap: 14px; }
+.comment-content-box .comment-info { margin-bottom: 8px; gap: 10px; flex-wrap: wrap; }
+.comment-content-box .comment-info .nickname { color: var(--geo-navy, #1a1a2e); font-size: 14px; font-weight: 950; }
+.comment-content-box .comment-info .time { padding: 3px 6px; color: var(--color-text-muted, #777); font-size: 10px; background: #f1f1f4; border: 1px solid var(--geo-navy, #1a1a2e); }
+.comment-content-box .comment-info .reply-text { color: var(--color-text-secondary, #555568); }
+.comment-content-box .comment-info .reply-text .at-user { color: var(--geo-coral-dark, #d9485f); font-weight: 850; }
+.comment-content-box .text { margin: 0 0 10px; color: var(--geo-navy, #1a1a2e); font-size: 14px; line-height: 1.75; }
+.comment-content-box .comment-actions { align-items: center; gap: 12px; color: var(--color-text-muted, #777); }
+.comment-content-box .comment-actions .action-btn { padding: 4px 8px; color: var(--geo-navy, #1a1a2e); font-weight: 850; background: #fff; border: 1px solid var(--geo-navy, #1a1a2e); }
+.comment-content-box .comment-actions .action-btn:hover { color: var(--geo-navy, #1a1a2e); background: var(--geo-gold, #ffd54f); }
+.comment-content-box .comment-actions :deep(.like-btn) { padding: 4px 9px; color: var(--geo-navy, #1a1a2e); font-weight: 850; background: var(--geo-sky-light, #dff5ff); border: 1px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+
+.sub-comments { margin: 18px 0 0 54px; padding: 16px; background: var(--geo-sky-light, #dff5ff); border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 4px 4px 0 var(--geo-gold, #ffd54f); }
+.sub-comments .sub-comment-item { gap: 12px; margin-bottom: 18px; }
+.comment-card :deep(.el-empty) { padding: 45px 0; border: 2px dashed var(--geo-navy, #1a1a2e); }
+.comment-card :deep(.el-empty__description p) { color: var(--geo-navy, #1a1a2e); font-weight: 750; }
+
+@media (max-width: 640px) {
+  .comment-card { margin-top: 28px; border-right: 0; border-left: 0; box-shadow: none; }
+  .comment-card :deep(.el-card__body) { padding: 26px 18px; }
+  .comment-header { align-items: flex-start; flex-direction: column; }
+  .comment-header > p { padding-left: 62px; }
+  .comment-input-wrapper { padding: 15px; }
+  .comment-input-wrapper > :deep(.el-avatar) { display: none; }
+  .sub-comments { margin-left: 22px; }
 }
 </style>

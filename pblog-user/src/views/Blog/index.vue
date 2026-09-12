@@ -1,29 +1,29 @@
 <template>
   <div class="blog-detail-container" v-loading="loading">
 
-    <!-- 顶部大图/封面 -->
-    <div class="blog-header-banner" :style="{ backgroundImage: `url(${article.coverImage || defaultCover})` }">
-      <div class="banner-overlay"></div>
+    <!-- 文章头图 -->
+    <header class="blog-header-banner">
       <div class="banner-content">
+        <div class="article-eyebrow"><span></span> ARTICLE / {{ article.id || '00' }}</div>
         <h1 class="article-title">{{ article.title }}</h1>
         <div class="article-meta">
-<!--          <div class="meta-item author-info">-->
-<!--            <el-avatar :size="32" :src="defaultAvatar" />-->
-<!--            <span class="author-name">用户 {{ article.authorId || '未知' }}</span>-->
-<!--          </div>-->
-          <span class="meta-separator">·</span>
           <div class="meta-item">
             <el-icon><Calendar /></el-icon>
             <span>{{ formatDate(article.publishedAt) }}</span>
           </div>
-          <span class="meta-separator">·</span>
           <div class="meta-item">
             <el-icon><View /></el-icon>
             <span>{{ article.viewCount || 0 }} 阅读</span>
           </div>
         </div>
       </div>
-    </div>
+      <div class="cover-frame">
+        <div class="cover-image" :style="{ backgroundImage: `url(${article.coverImage || defaultCover})` }"></div>
+        <span class="cover-index">READ / BLOG</span>
+      </div>
+      <div class="hero-shape hero-circle" aria-hidden="true"></div>
+      <div class="hero-shape hero-triangle" aria-hidden="true"></div>
+    </header>
 
     <div class="main-wrapper">
       <el-row :gutter="40">
@@ -32,7 +32,7 @@
           <el-card class="article-card" shadow="never">
             <!-- 简介 -->
             <div class="article-summary" v-if="article.summary">
-              <el-icon><Quote /></el-icon>
+              <span class="summary-mark">“</span>
               <p>{{ article.summary }}</p>
             </div>
 
@@ -48,6 +48,7 @@
 
             <!-- 底部点赞等操作 -->
             <div class="article-footer">
+              <div class="footer-label"><small>ENJOYED IT?</small><strong>喜欢这篇文章？</strong></div>
               <LikeButton
                   :target-id="article.id"
                   :target-type="1"
@@ -67,16 +68,20 @@
             <!-- 作者卡片 -->
             <el-card class="sidebar-card" shadow="hover">
               <div class="author-card">
-                <el-avatar :size="64" :src="authorInfo.avatarUrl" />
+                <span class="sidebar-kicker">AUTHOR / 01</span>
+                <el-avatar :size="72" :src="authorInfo.avatarUrl || defaultAvatar" />
                 <h3 class="mt-2">{{authorInfo.nickname}}</h3>
                 <p class="desc">{{ authorInfo.bio || '暂无简介'}}</p>
-                <el-button type="primary" class="w-100 mt-3" @click="ElMessage.warning('功能未开放')"  round>关注作者</el-button>
+                <el-button type="primary" class="w-100 mt-3" @click="ElMessage.warning('功能未开放')">关注作者 <span>→</span></el-button>
               </div>
             </el-card>
 
 
             <!-- 目录 (动态生成 + 高亮) -->
-            <el-card class="sidebar-card mt-4 sticky-card" shadow="hover" header="目录">
+            <el-card class="sidebar-card toc-card mt-4 sticky-card" shadow="hover">
+              <template #header>
+                <div class="sidebar-heading"><b>02</b><span><small>CONTENTS</small>文章目录</span></div>
+              </template>
               <div class="toc-list" v-if="tocList.length > 0">
                 <div
                     v-for="(item, index) in tocList"
@@ -390,5 +395,137 @@ onUnmounted(() => {
   table { display: block; width: 100%; overflow: auto; margin-bottom: 1.5em; border-spacing: 0; border-collapse: collapse; }
   th, td { padding: 6px 13px; border: 1px solid var(--color-border); }
   tr:nth-child(2n) { background-color: var(--color-bg-soft); }
+}
+</style>
+
+<style scoped lang="scss">
+.blog-detail-container {
+  min-height: calc(100vh - 68px);
+  padding-bottom: 90px;
+  color: var(--geo-navy, #1a1a2e);
+  background-color: #fff;
+  background-image:
+    linear-gradient(rgba(26, 26, 46, .04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 46, .04) 1px, transparent 1px);
+  background-size: 46px 46px;
+}
+
+.blog-header-banner {
+  position: relative;
+  display: grid;
+  height: auto;
+  min-height: 440px;
+  margin: 0;
+  padding: 64px max(28px, calc((100vw - 1240px) / 2));
+  overflow: hidden;
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, .72fr);
+  align-items: center;
+  gap: clamp(50px, 7vw, 100px);
+  box-sizing: border-box;
+  color: var(--geo-navy, #1a1a2e);
+  text-align: left;
+  background: rgba(255, 255, 255, .94);
+  border-bottom: 3px solid var(--geo-navy, #1a1a2e);
+}
+
+.banner-content { position: relative; z-index: 3; max-width: none; padding: 0; }
+.article-eyebrow { display: flex; margin-bottom: 20px; align-items: center; gap: 10px; color: var(--geo-coral-dark, #d9485f); font-size: 11px; font-weight: 950; letter-spacing: .17em; }
+.article-eyebrow span { width: 38px; height: 8px; background: linear-gradient(90deg, var(--geo-coral, #ff6b6b) 0 58%, var(--geo-sky, #53bde8) 58%); border: 1px solid var(--geo-navy, #1a1a2e); }
+.article-title { max-width: 760px; margin: 0 0 30px; color: var(--geo-navy, #1a1a2e); font-size: clamp(38px, 5vw, 68px); font-weight: 950; line-height: 1.08; letter-spacing: -.065em; text-shadow: none; }
+.article-meta { display: flex; justify-content: flex-start; gap: 12px; opacity: 1; }
+.meta-item { min-height: 36px; padding: 0 12px; color: var(--geo-navy, #1a1a2e); font-size: 13px; font-weight: 800; background: var(--geo-gold-light, #fff5c2); border: 2px solid var(--geo-navy, #1a1a2e); }
+.meta-item:nth-child(2) { background: var(--geo-sky-light, #dff5ff); }
+.meta-separator { display: none; }
+
+.cover-frame { position: relative; z-index: 2; width: 100%; max-width: 470px; justify-self: end; }
+.cover-image { aspect-ratio: 16 / 10; background-position: center; background-size: cover; border: 3px solid var(--geo-navy, #1a1a2e); box-shadow: 12px 12px 0 var(--geo-coral, #ff6b6b); }
+.cover-index { position: absolute; right: -14px; bottom: -16px; padding: 8px 11px; color: #fff; font-size: 9px; font-weight: 950; letter-spacing: .15em; background: var(--geo-navy, #1a1a2e); border: 2px solid #fff; }
+.hero-shape { position: absolute; z-index: 1; border: 3px solid var(--geo-navy, #1a1a2e); }
+.hero-circle { top: 30px; right: 39%; width: 52px; height: 52px; background: var(--geo-sky, #53bde8); border-radius: 50%; }
+.hero-triangle { right: 46%; bottom: 26px; width: 54px; height: 54px; background: var(--geo-gold, #ffd54f); clip-path: polygon(50% 0, 100% 100%, 0 100%); transform: rotate(-11deg); }
+
+.main-wrapper { max-width: 1240px; margin: 0 auto; padding: 58px 28px 0; z-index: 2; }
+.article-card { min-height: 500px; padding: 0; background: #fff; border: 3px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 10px 10px 0 var(--geo-coral, #ff6b6b); }
+.article-card :deep(.el-card__body) { padding: clamp(26px, 5vw, 58px); }
+
+.article-summary { position: relative; margin: 0 0 42px; padding: 24px 28px 24px 66px; color: var(--geo-navy, #1a1a2e); font-style: normal; background: var(--geo-gold-light, #fff5c2); border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 6px 6px 0 var(--geo-sky, #53bde8); }
+.article-summary .summary-mark { position: absolute; top: 6px; left: 18px; font-family: Georgia, serif; font-size: 58px; font-weight: 900; line-height: 1; opacity: .25; }
+.article-summary p { margin: 0; font-size: 15px; font-weight: 750; line-height: 1.8; }
+
+.article-card :deep(.el-divider) { margin: 48px 0 30px; border-color: var(--geo-navy, #1a1a2e); border-width: 2px 0 0; }
+.article-footer { margin: 0; padding: 0; justify-content: space-between; gap: 20px; }
+.footer-label { display: flex; flex-direction: column; }
+.footer-label small { margin-bottom: 5px; color: var(--geo-coral-dark, #d9485f); font-size: 9px; font-weight: 950; letter-spacing: .15em; }
+.footer-label strong { font-size: 18px; }
+.article-footer :deep(.like-btn) { min-height: 42px; padding: 0 16px; color: var(--geo-navy, #1a1a2e); font-weight: 900; background: var(--geo-gold, #ffd54f); border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 4px 4px 0 var(--geo-navy, #1a1a2e); }
+.article-footer :deep(.like-btn:hover) { background: var(--geo-coral, #ff6b6b); transform: translate(-2px, -2px); }
+
+.sidebar-wrapper { position: relative; }
+.sidebar-card { overflow: visible; background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 7px 7px 0 var(--geo-navy, #1a1a2e); }
+.sidebar-card :deep(.el-card__body) { padding: 24px; }
+.author-card { padding: 4px; }
+.sidebar-kicker { display: block; margin-bottom: 18px; color: var(--geo-coral-dark, #d9485f); font-size: 9px; font-weight: 950; letter-spacing: .15em; text-align: left; }
+.author-card :deep(.el-avatar) { color: var(--geo-navy, #1a1a2e); background: var(--geo-sky-light, #dff5ff); border: 3px solid var(--geo-navy, #1a1a2e); box-shadow: 5px 5px 0 var(--geo-gold, #ffd54f); }
+.author-card h3 { margin: 17px 0 0; font-size: 21px; font-weight: 950; }
+.author-card .desc { min-height: 40px; margin: 10px 0 18px; color: var(--color-text-muted, #777); line-height: 1.65; }
+.author-card :deep(.el-button) { height: 42px; margin: 0; color: var(--geo-navy, #1a1a2e); font-weight: 900; background: var(--geo-gold, #ffd54f); border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 4px 4px 0 var(--geo-navy, #1a1a2e); }
+.author-card :deep(.el-button:hover) { background: var(--geo-coral, #ff6b6b); }
+.author-card :deep(.el-button span span) { margin-left: auto; font-size: 18px; }
+
+.toc-card :deep(.el-card__header) { padding: 18px 20px; background: var(--geo-gold-light, #fff5c2); border-bottom: 2px solid var(--geo-navy, #1a1a2e); }
+.sidebar-heading { display: flex; align-items: center; gap: 12px; }
+.sidebar-heading b { display: grid; width: 34px; height: 34px; place-items: center; color: #fff; font-size: 12px; background: var(--geo-navy, #1a1a2e); box-shadow: 4px 4px 0 var(--geo-sky, #53bde8); }
+.sidebar-heading span { font-size: 16px; font-weight: 950; line-height: 1; }
+.sidebar-heading small { display: block; margin-bottom: 4px; color: var(--geo-coral-dark, #d9485f); font-size: 8px; letter-spacing: .12em; }
+.sticky-card { top: 88px; }
+.toc-list .toc-item { padding: 9px 10px; color: var(--color-text-secondary, #555568); font-weight: 700; border-left: 3px solid transparent; border-radius: 0; }
+.toc-list .toc-item:hover { color: var(--geo-navy, #1a1a2e); background: var(--geo-sky-light, #dff5ff); }
+.toc-list .toc-item.active { color: var(--geo-navy, #1a1a2e); font-weight: 900; background: var(--geo-gold, #ffd54f); border-left-color: var(--geo-navy, #1a1a2e); }
+
+:deep(.typo-content) {
+  color: var(--color-text-primary, #28283a);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.9;
+
+  h1, h2, h3, h4 { position: relative; margin: 1.8em 0 .8em; color: var(--geo-navy, #1a1a2e); font-weight: 950; letter-spacing: -.035em; scroll-margin-top: 92px; }
+  h1 { padding: 0 0 12px 18px; font-size: 2em; border-bottom: 3px solid var(--geo-navy, #1a1a2e); }
+  h1::before { position: absolute; bottom: -3px; left: 0; width: 72px; height: 8px; content: ''; background: var(--geo-coral, #ff6b6b); }
+  h2 { padding: 8px 13px; font-size: 1.55em; background: var(--geo-gold-light, #fff5c2); border: 2px solid var(--geo-navy, #1a1a2e); }
+  h3 { padding-left: 14px; font-size: 1.3em; border-left: 6px solid var(--geo-sky, #53bde8); }
+  p { margin: 0 0 1.45em; text-align: left; }
+  a { color: var(--geo-coral-dark, #d9485f); font-weight: 750; text-decoration-thickness: 2px; }
+  ul, ol { margin-bottom: 1.5em; padding-left: 1.8em; }
+  li { margin-bottom: .55em; }
+  li::marker { color: var(--geo-coral-dark, #d9485f); font-weight: 900; }
+  img { max-width: 100%; height: auto; margin: 1.8em auto; border: 3px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 8px 8px 0 var(--geo-sky, #53bde8); }
+  pre { margin: 1.8em 0; padding: 20px; background: var(--geo-navy, #1a1a2e); border: 3px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 7px 7px 0 var(--geo-coral, #ff6b6b); }
+  p code, li code { padding: .2em .45em; color: var(--geo-coral-dark, #d9485f); font-weight: 750; background: var(--geo-coral-light, #ffe4e8); border: 1px solid var(--geo-coral, #ff6b6b); border-radius: 0; }
+  blockquote { margin: 1.8em 0; padding: 18px 22px; color: var(--geo-navy, #1a1a2e); font-weight: 700; background: var(--geo-sky-light, #dff5ff); border: 2px solid var(--geo-navy, #1a1a2e); border-left: 8px solid var(--geo-sky, #53bde8); border-radius: 0; }
+  table { border: 2px solid var(--geo-navy, #1a1a2e); }
+  th, td { padding: 9px 12px; border: 1px solid var(--geo-navy, #1a1a2e); }
+  th { background: var(--geo-gold, #ffd54f); }
+  tr:nth-child(2n) { background: var(--geo-sky-light, #dff5ff); }
+  hr { height: 3px; margin: 40px 0; background: var(--geo-navy, #1a1a2e); border: 0; }
+}
+
+@media (max-width: 991px) {
+  .blog-header-banner { min-height: 0; padding: 54px 28px 64px; grid-template-columns: 1fr; gap: 44px; }
+  .cover-frame { max-width: 680px; justify-self: start; }
+  .hero-shape { display: none; }
+  .main-wrapper { padding-top: 42px; }
+}
+
+@media (max-width: 640px) {
+  .blog-header-banner { padding: 42px 20px 52px; }
+  .article-title { font-size: 38px; }
+  .article-meta { align-items: stretch; flex-direction: column; }
+  .meta-item { width: fit-content; }
+  .main-wrapper { padding: 30px 14px 0; }
+  .article-card { border-right: 0; border-left: 0; box-shadow: none; }
+  .article-card :deep(.el-card__body) { padding: 28px 20px; }
+  .article-summary { padding: 54px 18px 18px; }
+  .article-summary .summary-mark { top: 7px; left: 15px; }
+  .article-footer { align-items: flex-start; flex-direction: column; }
 }
 </style>

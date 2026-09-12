@@ -202,3 +202,29 @@ onMounted(() => {
   font-size: 14px;
 }
 </style>
+
+<style scoped>
+.comment-manage {
+  padding: 0;
+  color: var(--geo-navy, #1a1a2e);
+  background: #fff;
+  border: 2px solid var(--geo-navy, #1a1a2e);
+  box-shadow: 6px 6px 0 var(--geo-coral, #ff6b6b);
+}
+.comment-manage :deep(.el-tabs__header) { margin: 0; padding: 18px 20px 0; background: var(--geo-gold-light, #fff5c2); border-bottom: 2px solid var(--geo-navy, #1a1a2e); }
+.comment-manage :deep(.el-tabs__nav-wrap::after) { height: 0; }
+.comment-manage :deep(.el-tabs__item) { height: 42px; padding: 0 18px; color: var(--geo-navy, #1a1a2e); font-weight: 850; border: 2px solid transparent; }
+.comment-manage :deep(.el-tabs__item.is-active) { color: var(--geo-navy, #1a1a2e); background: var(--geo-gold, #ffd54f); border-color: var(--geo-navy, #1a1a2e); }
+.comment-manage :deep(.el-tabs__active-bar) { display: none; }
+.comment-manage :deep(.el-table) { --el-table-header-bg-color: var(--geo-sky-light, #dff5ff); --el-table-border-color: rgba(26, 26, 46, .18); color: var(--geo-navy, #1a1a2e); }
+.comment-manage :deep(.el-table th.el-table__cell) { color: var(--geo-navy, #1a1a2e); font-weight: 900; border-bottom: 2px solid var(--geo-navy, #1a1a2e); }
+.comment-manage :deep(.el-table__row:hover > td.el-table__cell) { background: var(--geo-gold-light, #fff5c2); }
+.comment-manage :deep(.el-table__inner-wrapper::before) { height: 0; }
+.comment-content { color: var(--geo-navy, #1a1a2e); font-size: 14px; font-weight: 700; }
+.source-article { color: var(--geo-navy, #1a1a2e); background: var(--geo-sky-light, #dff5ff); border: 1px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+.user-cell :deep(.el-avatar) { border: 2px solid var(--geo-navy, #1a1a2e); }
+.ml-2 { color: var(--geo-navy, #1a1a2e); font-weight: 750; }
+.comment-manage :deep(.el-button.is-link) { min-height: 28px; padding: 0 8px; color: var(--geo-navy, #1a1a2e); font-weight: 850; background: #fff; border: 1px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 2px 2px 0 var(--geo-sky, #53bde8); }
+.comment-manage :deep(.el-button--danger.is-link) { box-shadow: 2px 2px 0 var(--geo-coral, #ff6b6b); }
+@media (max-width: 680px) { .comment-manage :deep(.el-tabs__header) { padding-left: 10px; padding-right: 10px; } }
+</style>

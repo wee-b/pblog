@@ -554,3 +554,65 @@ onMounted(() => {
   justify-content: flex-end;
 }
 </style>
+
+<style scoped>
+.content-manage {
+  min-height: 0;
+  padding: 0;
+  color: var(--geo-navy, #1a1a2e);
+  background: #fff;
+}
+
+.search-card,
+.table-card {
+  overflow: visible;
+  border: 2px solid var(--geo-navy, #1a1a2e);
+  border-radius: 0;
+}
+.search-card { margin-bottom: 24px; background: var(--geo-gold-light, #fff5c2); box-shadow: 6px 6px 0 var(--geo-navy, #1a1a2e); }
+.table-card { box-shadow: 6px 6px 0 var(--geo-coral, #ff6b6b); }
+.search-card :deep(.el-card__body) { padding: 22px 22px 4px; }
+.table-card :deep(.el-card__body) { padding: 22px; }
+.search-card :deep(.el-form) { display: flex; flex-wrap: wrap; gap: 0 14px; }
+.search-card :deep(.el-form-item__label) { color: var(--geo-navy, #1a1a2e); font-weight: 850; }
+.content-manage :deep(.el-input__wrapper),
+.content-manage :deep(.el-select__wrapper) { min-height: 38px; background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: none; }
+.content-manage :deep(.el-input__wrapper.is-focus),
+.content-manage :deep(.el-select__wrapper.is-focused) { box-shadow: 3px 3px 0 var(--geo-sky, #53bde8); }
+.content-manage :deep(.el-button) { min-height: 36px; padding: 0 12px; color: var(--geo-navy, #1a1a2e); font-weight: 850; background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 3px 3px 0 var(--geo-navy, #1a1a2e); }
+.content-manage :deep(.el-button--primary) { color: var(--geo-navy, #1a1a2e); background: var(--geo-gold, #ffd54f); }
+.content-manage :deep(.el-button--danger) { color: var(--geo-navy, #1a1a2e); background: var(--geo-coral-light, #ffdada); }
+.content-manage :deep(.el-button.is-link) { min-height: auto; padding: 4px 7px; color: var(--geo-navy, #1a1a2e); background: #fff; border-width: 1px; box-shadow: 2px 2px 0 var(--geo-sky, #53bde8); }
+.table-toolbar { margin-bottom: 22px; padding-bottom: 18px; border-bottom: 2px solid var(--geo-navy, #1a1a2e); }
+.selection-text { padding: 5px 8px; color: var(--geo-navy, #1a1a2e); font-weight: 800; background: var(--geo-sky-light, #dff5ff); border: 1px solid var(--geo-navy, #1a1a2e); }
+.content-manage :deep(.el-table) { --el-table-border-color: rgba(26, 26, 46, .18); --el-table-header-bg-color: var(--geo-gold-light, #fff5c2); color: var(--geo-navy, #1a1a2e); }
+.content-manage :deep(.el-table th.el-table__cell) { color: var(--geo-navy, #1a1a2e); font-weight: 900; border-bottom: 2px solid var(--geo-navy, #1a1a2e); }
+.content-manage :deep(.el-table__row:hover > td.el-table__cell) { background: var(--geo-sky-light, #dff5ff); }
+.content-manage :deep(.el-checkbox__inner) { border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+.content-manage :deep(.el-checkbox__input.is-checked .el-checkbox__inner) { background: var(--geo-coral, #ff6b6b); border-color: var(--geo-navy, #1a1a2e); }
+.table-cover,
+.no-cover { border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+.no-cover { color: var(--geo-navy, #1a1a2e); background: var(--geo-sky-light, #dff5ff); }
+.title-text { color: var(--geo-navy, #1a1a2e); font-weight: 750; }
+.title-text:hover { color: var(--geo-coral, #ff6b6b); }
+.content-manage :deep(.el-tag) { color: var(--geo-navy, #1a1a2e); font-weight: 750; background: var(--geo-sky-light, #dff5ff); border: 1px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+.content-manage :deep(.sticky-tag) { color: #fff; background: var(--geo-coral, #ff6b6b); }
+.status-dot { justify-content: flex-start; color: var(--geo-navy, #1a1a2e); font-weight: 750; }
+.status-dot .dot { width: 9px; height: 9px; border: 1px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+.stats-row { color: var(--geo-navy, #1a1a2e); font-weight: 700; }
+.pagination-container { padding-top: 20px; justify-content: center; border-top: 2px solid rgba(26, 26, 46, .12); }
+.pagination-container :deep(.el-pager li),
+.pagination-container :deep(.btn-prev),
+.pagination-container :deep(.btn-next) { border: 1px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+.pagination-container :deep(.el-pager li.is-active) { color: var(--geo-navy, #1a1a2e); background: var(--geo-gold, #ffd54f); }
+
+@media (max-width: 720px) {
+  .search-card :deep(.el-form-item) { width: 100%; margin-right: 0; }
+  .search-card :deep(.el-form-item__content),
+  .search-card :deep(.el-input),
+  .search-card :deep(.el-select) { width: 100% !important; }
+  .table-card :deep(.el-card__body) { padding: 14px; }
+  .table-toolbar { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .pagination-container { overflow-x: auto; justify-content: flex-start; }
+}
+</style>

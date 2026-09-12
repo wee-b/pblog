@@ -7,7 +7,7 @@
           <el-icon><ArrowLeft /></el-icon>
         </div>
         <span class="divider"></span>
-        <span class="brand-text">创作中心</span>
+        <span class="brand-text"><small>WRITE / 01</small>创作中心</span>
       </div>
 
       <div class="nav-center">
@@ -654,5 +654,153 @@ $accent-color: #409eff;
       }
     }
   }
+}
+</style>
+
+<style lang="scss" scoped>
+.page-container {
+  color: var(--geo-navy, #1a1a2e);
+  background-color: #fff;
+  background-image:
+    linear-gradient(rgba(26, 26, 46, .045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(26, 26, 46, .045) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.editor-nav {
+  height: 78px;
+  padding: 0 24px;
+  gap: 22px;
+  background: #fff;
+  backdrop-filter: none;
+  border-bottom: 3px solid var(--geo-navy, #1a1a2e);
+  box-shadow: 0 6px 0 var(--geo-gold, #ffd54f);
+
+  .nav-left {
+    width: 205px;
+
+    .back-btn {
+      width: 38px;
+      height: 38px;
+      color: var(--geo-navy, #1a1a2e);
+      background: var(--geo-sky, #53bde8);
+      border: 2px solid var(--geo-navy, #1a1a2e);
+      border-radius: 0;
+      box-shadow: 4px 4px 0 var(--geo-navy, #1a1a2e);
+
+      &:hover { color: var(--geo-navy, #1a1a2e); background: var(--geo-gold, #ffd54f); transform: translate(-2px, -2px); }
+    }
+
+    .divider { width: 2px; height: 32px; margin: 0 15px; background: var(--geo-navy, #1a1a2e); }
+    .brand-text {
+      color: var(--geo-navy, #1a1a2e);
+      font-size: 18px;
+      font-weight: 950;
+      line-height: 1.05;
+      letter-spacing: -.03em;
+
+      small { display: block; margin-bottom: 4px; color: var(--geo-coral, #ff6b6b); font-size: 8px; letter-spacing: .15em; }
+    }
+  }
+
+  .nav-center .title-input {
+    max-width: 720px;
+    height: 44px;
+    padding: 0 16px;
+    box-sizing: border-box;
+    color: var(--geo-navy, #1a1a2e);
+    font-size: 17px;
+    font-weight: 800;
+    text-align: left;
+    background: #fff;
+    border: 2px solid var(--geo-navy, #1a1a2e);
+    border-radius: 0;
+
+    &:hover, &:focus { background: var(--geo-gold-light, #fff5c2); box-shadow: 4px 4px 0 var(--geo-sky, #53bde8); }
+  }
+
+  .write-nav-right {
+    width: auto;
+    min-width: 385px;
+    gap: 10px;
+
+    .status-badge {
+      min-height: 30px;
+      margin-right: 2px;
+      padding: 0 9px;
+      color: var(--geo-navy, #1a1a2e);
+      font-weight: 800;
+      background: #fff;
+      border: 1px solid var(--geo-navy, #1a1a2e);
+
+      .dot { width: 8px; height: 8px; background: var(--geo-coral, #ff6b6b); border: 1px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+      &.saved .dot { background: var(--geo-sky, #53bde8); }
+    }
+
+    .draft-btn,
+    .publish-btn {
+      height: 38px;
+      padding: 0 13px;
+      color: var(--geo-navy, #1a1a2e);
+      font-weight: 900;
+      background: #fff;
+      border: 2px solid var(--geo-navy, #1a1a2e);
+      border-radius: 0;
+      box-shadow: 3px 3px 0 var(--geo-coral, #ff6b6b);
+    }
+
+    .draft-btn:hover { color: var(--geo-navy, #1a1a2e); background: var(--geo-sky-light, #dff5ff); border-color: var(--geo-navy, #1a1a2e); }
+    .publish-btn { background: var(--geo-gold, #ffd54f); box-shadow: 4px 4px 0 var(--geo-navy, #1a1a2e); }
+    .publish-btn:hover { color: var(--geo-navy, #1a1a2e); background: var(--geo-coral, #ff6b6b); border-color: var(--geo-navy, #1a1a2e); }
+  }
+}
+
+.editor-body .center-area {
+  padding: 34px 28px 28px;
+
+  .paper-container {
+    max-width: 1420px;
+    min-height: calc(100vh - 148px);
+    overflow: hidden;
+    background: #fff;
+    border: 3px solid var(--geo-navy, #1a1a2e);
+    border-radius: 0;
+    box-shadow: 10px 10px 0 var(--geo-coral, #ff6b6b);
+  }
+
+  .my-md-editor {
+    min-height: calc(100vh - 148px);
+    color: var(--geo-navy, #1a1a2e);
+    --md-bk-color: #fff;
+    --md-border-color: rgba(26, 26, 46, .2);
+
+    :deep(.md-editor-toolbar-wrapper) { padding: 8px 18px; background: var(--geo-gold-light, #fff5c2); border-bottom: 2px solid var(--geo-navy, #1a1a2e); }
+    :deep(.md-editor-toolbar-item) { color: var(--geo-navy, #1a1a2e); border-radius: 0; }
+    :deep(.md-editor-toolbar-item:hover) { background: var(--geo-sky, #53bde8); }
+    :deep(.md-editor-content-wrapper) { padding: 10px 30px; }
+    :deep(.md-editor-input-wrapper) { border-right: 2px solid var(--geo-navy, #1a1a2e); }
+    :deep(.md-editor-preview-wrapper) { background-image: linear-gradient(rgba(26,26,46,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(26,26,46,.025) 1px,transparent 1px); background-size: 32px 32px; }
+  }
+}
+
+@media (max-width: 1050px) {
+  .editor-nav { display: grid; grid-template-columns: auto 1fr; height: auto; min-height: 118px; padding: 13px 18px; }
+  .editor-nav .nav-left { width: auto; }
+  .editor-nav .nav-center { grid-column: 1 / -1; grid-row: 2; }
+  .editor-nav .nav-center .title-input { max-width: none; }
+  .editor-nav .write-nav-right { min-width: 0; }
+  .write-nav-right .status-badge { display: none !important; }
+  .editor-body .center-area { padding: 26px 18px 20px; }
+}
+
+@media (max-width: 650px) {
+  .editor-nav { grid-template-columns: 1fr; }
+  .editor-nav .nav-left { justify-content: flex-start; }
+  .editor-nav .write-nav-right { grid-row: 2; justify-content: flex-start; flex-wrap: wrap; }
+  .editor-nav .nav-center { grid-row: 3; }
+  .editor-nav .write-nav-right :deep(.global-avatar) { margin-left: auto; }
+  .editor-body .center-area { padding: 12px 0 0; }
+  .editor-body .center-area .paper-container { max-width: 100%; margin: 0; border-right: 0; border-left: 0; box-shadow: none; }
+  .editor-body .center-area .my-md-editor :deep(.md-editor-content-wrapper) { padding: 6px 12px; }
 }
 </style>

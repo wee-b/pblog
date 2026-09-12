@@ -73,7 +73,7 @@
         title="编辑个人资料"
         width="500px"
         :close-on-click-modal="false"
-        class="custom-dialog"
+        class="profile-dialog"
         align-center
     >
       <el-form
@@ -133,6 +133,7 @@
         width="460px"
         :close-on-click-modal="false"
         align-center
+        class="profile-dialog"
     >
       <el-form
           ref="passwordFormRef"
@@ -751,4 +752,172 @@ onUnmounted(() => {
     }
   }
 }
+</style>
+
+<style scoped lang="scss">
+.personal-info-container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0;
+  color: var(--geo-navy, #1a1a2e);
+}
+
+.profile-header {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr) auto;
+  padding: 28px;
+  align-items: center;
+  gap: 24px;
+  background: var(--geo-sky-light, #dff5ff);
+  border: 2px solid var(--geo-navy, #1a1a2e);
+  box-shadow: 7px 7px 0 var(--geo-navy, #1a1a2e);
+
+  .avatar-box {
+    width: 104px;
+    height: 104px;
+    border: 3px solid var(--geo-navy, #1a1a2e);
+    border-radius: 0;
+    box-shadow: 6px 6px 0 var(--geo-gold, #ffd54f);
+    transform: rotate(-2deg);
+    overflow: hidden;
+
+    .user-avatar { border-radius: 0; transform: rotate(2deg) scale(1.05); }
+    .avatar-hover-mask { border-radius: 0; background: rgba(26, 26, 46, .72); }
+  }
+
+  .header-info {
+    min-width: 0;
+
+    .name-row {
+      flex-wrap: wrap;
+      gap: 10px;
+
+      .nickname { color: var(--geo-navy, #1a1a2e); font-size: clamp(25px, 3vw, 36px); font-weight: 950; letter-spacing: -.04em; }
+      .uid-tag { height: auto; padding: 4px 8px; color: var(--geo-navy, #1a1a2e); font-weight: 800; background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+    }
+
+    .bio { max-width: 520px; color: var(--color-text-secondary, #555); font-size: 14px; line-height: 1.7; }
+  }
+
+  .edit-base-btn {
+    height: 42px;
+    padding: 0 14px;
+    color: var(--geo-navy, #1a1a2e);
+    font-weight: 900;
+    background: #fff;
+    border: 2px solid var(--geo-navy, #1a1a2e);
+    border-radius: 0;
+    box-shadow: 4px 4px 0 var(--geo-coral, #ff6b6b);
+
+    &:hover { color: var(--geo-navy, #1a1a2e); background: var(--geo-gold-light, #fff5c2); transform: translate(-2px, -2px); }
+  }
+}
+
+:deep(.el-divider) { display: none; }
+
+.info-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 34px 0 0;
+  gap: 18px;
+}
+
+.info-item {
+  position: relative;
+  display: flex;
+  min-height: 172px;
+  padding: 48px 20px 18px;
+  box-sizing: border-box;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 14px;
+  background: #fff;
+  border: 2px solid var(--geo-navy, #1a1a2e);
+  border-radius: 0;
+  box-shadow: 5px 5px 0 var(--geo-navy, #1a1a2e);
+
+  &::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    width: 38px;
+    height: 30px;
+    place-items: center;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 950;
+    background: var(--geo-navy, #1a1a2e);
+    content: 'A';
+  }
+  &:nth-child(2)::before { color: var(--geo-navy, #1a1a2e); background: var(--geo-gold, #ffd54f); content: 'B'; }
+  &:nth-child(3)::before { color: var(--geo-navy, #1a1a2e); background: var(--geo-coral, #ff6b6b); content: 'C'; }
+  &:hover { background: var(--geo-gold-light, #fff5c2); border-color: var(--geo-navy, #1a1a2e); box-shadow: 8px 8px 0 var(--geo-navy, #1a1a2e); transform: translate(-3px, -3px); }
+
+  .label {
+    width: auto;
+    min-width: 0;
+    color: var(--geo-navy, #1a1a2e);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: .04em;
+
+    .el-icon { color: var(--geo-navy, #1a1a2e); }
+  }
+
+  .value {
+    width: 100%;
+    overflow: hidden;
+    color: var(--geo-navy, #1a1a2e);
+    font-size: 15px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.password-mask {
+      width: 100%;
+      color: var(--color-text-muted, #777);
+      flex-wrap: wrap;
+
+      .safe-tip { color: var(--geo-navy, #1a1a2e); font-weight: 800; background: var(--geo-sky-light, #dff5ff); border: 1px solid var(--geo-navy, #1a1a2e); border-radius: 0; }
+    }
+  }
+
+  .action { margin: auto 0 0; align-self: flex-start; }
+  .action :deep(.el-button) { height: 30px; padding: 0 9px; color: var(--geo-navy, #1a1a2e); font-size: 12px; font-weight: 900; background: #fff; border: 1px solid var(--geo-navy, #1a1a2e); }
+}
+
+.dialog-avatar-wrapper {
+  .avatar-uploader :deep(.el-upload) { border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 5px 5px 0 var(--geo-gold, #ffd54f); }
+  .avatar-preview .avatar, .avatar-preview .edit-mask { border-radius: 0; }
+}
+
+@media (max-width: 1050px) {
+  .info-list { grid-template-columns: 1fr; }
+  .info-item { min-height: 130px; }
+}
+
+@media (max-width: 680px) {
+  .profile-header { grid-template-columns: 82px 1fr; padding: 20px; gap: 18px; }
+  .profile-header .avatar-box { width: 74px; height: 74px; }
+  .profile-header .edit-base-btn { grid-column: 1 / -1; width: 100%; margin-top: 2px; }
+  .info-list { padding-top: 24px; }
+}
+</style>
+
+<style lang="scss">
+.profile-dialog {
+  border: 3px solid var(--geo-navy, #1a1a2e) !important;
+  border-radius: 0 !important;
+  box-shadow: 9px 9px 0 var(--geo-navy, #1a1a2e) !important;
+}
+.profile-dialog .el-dialog__header { padding: 19px 22px; background: var(--geo-gold-light, #fff5c2); border-bottom: 2px solid var(--geo-navy, #1a1a2e); }
+.profile-dialog .el-dialog__title { color: var(--geo-navy, #1a1a2e); font-weight: 950; }
+.profile-dialog .el-dialog__body { padding: 24px; }
+.profile-dialog .el-dialog__footer { padding: 16px 24px 22px; }
+.profile-dialog .el-input__wrapper,
+.profile-dialog .el-textarea__inner { border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: none; }
+.profile-dialog .el-button { color: var(--geo-navy, #1a1a2e); font-weight: 850; background: #fff; border: 2px solid var(--geo-navy, #1a1a2e); border-radius: 0; box-shadow: 3px 3px 0 var(--geo-coral, #ff6b6b); }
+.profile-dialog .el-button--primary { background: var(--geo-gold, #ffd54f); box-shadow: 3px 3px 0 var(--geo-navy, #1a1a2e); }
+@media (max-width: 560px) { .profile-dialog { width: calc(100% - 24px) !important; } }
 </style>
