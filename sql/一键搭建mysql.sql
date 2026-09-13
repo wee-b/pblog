@@ -292,6 +292,18 @@ CREATE TABLE `pb_friend_link` (
     KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='友情链接表';
 
+-- 2.11 每日站点访问统计表
+DROP TABLE IF EXISTS `pb_daily_visit_statistics`;
+CREATE TABLE `pb_daily_visit_statistics` (
+    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+    `statistic_date` date NOT NULL COMMENT '统计日期',
+    `visit_count` bigint unsigned NOT NULL DEFAULT 0 COMMENT '去重访问量',
+    `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_statistic_date` (`statistic_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='每日站点访问统计表';
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;

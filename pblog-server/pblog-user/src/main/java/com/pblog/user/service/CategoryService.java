@@ -29,4 +29,6 @@ public interface CategoryService {
 
     List<CategoryVO> getAll();
 
+    List<CategoryVO> getRootCategories();
+
 }

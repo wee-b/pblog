@@ -14,6 +14,7 @@ import router from './router'
 import { initLoginManager } from '@/utils/loginManager';
 import GlobalAvatar from '@/components/GlobalAvatar.vue';
 import LikeButton from '@/components/LikeButton.vue';
+import { trackCurrentVisit } from '@/apis/statistics.js';
 
 const app = createApp(App)
 
@@ -44,3 +45,8 @@ app.use(router)
 
 // 4. 挂载应用
 app.mount('#app')
+
+// 访问统计是非关键链路，上报失败不影响页面使用，后续刷新会再次尝试。
+trackCurrentVisit().catch((error) => {
+    console.warn('访问统计上报失败：', error.message)
+})

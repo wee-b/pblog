@@ -61,8 +61,8 @@
             <div class="metric-label">总访问量</div>
           </div>
           <div class="metric-item metric-item--sky">
-            <div class="metric-value">{{ metrics.avgQPS }}</div>
-            <div class="metric-label">平均 QPS</div>
+            <div class="metric-value">{{ metrics.todayViews }}</div>
+            <div class="metric-label">今日访问量</div>
           </div>
           <div class="metric-item metric-item--gold">
             <div class="metric-value">{{ metrics.totalArticles }}</div>
@@ -81,7 +81,8 @@
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import * as echarts from 'echarts'
-import { getAllCategorys } from '@/apis/category.js'
+import { getAllCategorys, getRootCategories } from '@/apis/category.js'
+import { getStatisticsOverview, trackCurrentVisit } from '@/apis/statistics.js'
 import { ElMessage } from 'element-plus'
 
 const chartReady = ref(false)
@@ -92,12 +93,16 @@ const tags = ref([
   { id: 'loading', categoryName: '加载中...', articleCount: 0 }
 ])
 
+const rootCategories = ref([])
+
 const metrics = ref({
-  totalViews: 12458,
-  avgQPS: '12.5',
-  totalArticles: 86,
-  totalComments: 342
+  totalViews: 0,
+  todayViews: 0,
+  totalArticles: 0,
+  totalComments: 0
 })
+
+const visitTrend = ref([])
 
 const pieInstance = ref(null)
 const barInstance = ref(null)
@@ -119,7 +124,10 @@ const getTags = async () => {
     res = res.data.data
     if (Array.isArray(res)) {
       const validTags = res
-          .filter(tag => tag.categoryName && (tag.articleCount || tag.articleCount === 0))
+          .filter(tag =>
+            tag.categoryName
+            && (tag.articleCount || tag.articleCount === 0)
+          )
           .map(tag => ({
             id: tag.id || `tag_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             categoryName: tag.categoryName,
@@ -135,6 +143,42 @@ const getTags = async () => {
     tags.value = [{ id: 'error', categoryName: '获取失败', articleCount: 0 }]
     ElMessage.error('获取标签信息失败，请稍后重试')
   }
+}
+
+const getStatistics = async () => {
+  try {
+    // 首页展示前等待本次访问完成，保证首次访问能立即反映在统计值中。
+    await trackCurrentVisit().catch(() => undefined)
+    const response = await getStatisticsOverview(7)
+    const data = response.data.data
+    metrics.value = {
+      totalViews: data?.totalViews || 0,
+      todayViews: data?.todayViews || 0,
+      totalArticles: data?.totalArticles || 0,
+      totalComments: data?.totalComments || 0
+    }
+    visitTrend.value = Array.isArray(data?.visitTrend) ? data.visitTrend : []
+  } catch (error) {
+    console.error('获取统计数据失败：', error)
+    ElMessage.error('获取统计数据失败，请稍后重试')
+  }
+}
+
+const getRootCategoryData = async () => {
+  try {
+    const response = await getRootCategories()
+    rootCategories.value = Array.isArray(response.data.data) ? response.data.data : []
+  } catch (error) {
+    console.error('获取一级分类失败：', error)
+    rootCategories.value = []
+    ElMessage.error('获取文章分类失败，请稍后重试')
+  }
+}
+
+const formatTrendDate = (date) => {
+  if (!date) return ''
+  const [, month, day] = date.split('-')
+  return `${Number(month)}/${Number(day)}`
 }
 
 const initCharts = () => {
@@ -178,14 +222,8 @@ const initCharts = () => {
         labelLine: {
           show: false
         },
-        data: [
-          { value: 35, name: '前端开发' },
-          { value: 25, name: '后端技术' },
-          { value: 15, name: '数据库' },
-          { value: 10, name: 'DevOps' },
-          { value: 8, name: '产品设计' },
-          { value: 7, name: '其他' }
-        ],
+        data: rootCategories.value
+          .map(category => ({ value: category.articleCount || 0, name: category.categoryName })),
         color: ['#F06292', '#FFD54F', '#4FC3F7', '#1A1A2E', '#B0BEC5', '#F8BBD0']
       }
     ]
@@ -207,7 +245,7 @@ const initCharts = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+      data: visitTrend.value.map(item => formatTrendDate(item.date)),
       axisLabel: { fontSize: 12, color: '#4a6b57' },
       axisLine: { lineStyle: { color: '#e1e1e1' } }
     },
@@ -221,7 +259,7 @@ const initCharts = () => {
       {
         name: '访问量',
         type: 'bar',
-        data: [1200, 1500, 1800, 1350, 1650, 2100, 1950],
+        data: visitTrend.value.map(item => item.visitCount || 0),
         itemStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             { offset: 0, color: '#F06292' },
@@ -253,7 +291,7 @@ const handleResize = () => {
 }
 
 onMounted(async () => {
-  await Promise.all([getTags(), nextTick()])
+  await Promise.all([getRootCategoryData(), getTags(), getStatistics(), nextTick()])
   initCharts()
   chartReady.value = true
   window.addEventListener('resize', handleResize)

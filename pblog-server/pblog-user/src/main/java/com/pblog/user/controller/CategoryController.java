@@ -41,6 +41,14 @@ public class CategoryController {
         return ResponseResult.success(lis);
     }
 
+    /**
+     * 查询一级分类及其汇总文章数（用于首页文章分类图表）。
+     */
+    @GetMapping("/root")
+    public ResponseResult<List<CategoryVO>> getRootCategories() {
+        return ResponseResult.success(categoryService.getRootCategories());
+    }
+
 
 
     // ===================================  弃用接口  ===================================

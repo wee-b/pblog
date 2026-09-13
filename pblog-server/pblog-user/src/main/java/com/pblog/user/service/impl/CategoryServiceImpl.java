@@ -66,4 +66,9 @@ public class CategoryServiceImpl implements CategoryService {
         List<CategoryVO> list = categoryMapper.selectCategoryVO();
         return list;
     }
+
+    @Override
+    public List<CategoryVO> getRootCategories() {
+        return categoryMapper.selectRootCategoryVO();
+    }
 }

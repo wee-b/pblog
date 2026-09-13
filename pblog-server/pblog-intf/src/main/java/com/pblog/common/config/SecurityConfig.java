@@ -98,9 +98,12 @@ public class SecurityConfig {
                     "/article/getFeaturedArticles",
                     "/series/**",
                     "/category/all",
+                    "/category/root",
                     "/comment/all/{id}",
                     "/comment/insertRemark",
                     "/like/count",
+                    "/statistics/visit",
+                    "/statistics/overview",
                     "/article/es/pageQuery"
                 ).permitAll()
 

@@ -8,3 +8,10 @@ export const getAllCategorys = async ()=>{
     })
     return response;
 }
+
+export const getRootCategories = async () => {
+    return http({
+        url: '/category/root',
+        method: 'GET',
+    })
+}

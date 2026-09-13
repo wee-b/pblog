@@ -28,9 +28,12 @@ const NO_TOKEN_WHITE_LIST = [
     "/api/series/queryById/**",
     "/api/series/featured",
     "/api/category/all",
+    "/api/category/root",
     "/api/comment/all/{id}",
     "/api/comment/insertRemark",
     "/like/count",
+    "/api/statistics/visit",
+    "/api/statistics/overview",
 ];
 
 
@@ -74,6 +77,10 @@ http.interceptors.response.use(
     (error) => {
         console.error('响应错误：', error.message);
         console.error('错误详情：', error.response || '无响应体');
+
+        if (error.config?.silent) {
+            return Promise.reject(error);
+        }
 
         // 🔴 适配弹窗的 401 处理逻辑
         if (error.response?.status === 401) {
