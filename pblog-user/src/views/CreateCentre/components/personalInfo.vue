@@ -399,13 +399,22 @@ const loadUserInfo = async () => {
       return
     }
 
-    // 从本地缓存获取用户信息
+    // 先从本地缓存兜底显示，再用后端最新数据覆盖，避免手机一直使用旧头像地址。
     const localUserInfo = getUserInfo()
     if (localUserInfo) {
       userInfo.value = {
         ...userInfo.value,
         ...localUserInfo
       }
+    }
+
+    const userRes = await UserApi.getUserInfo()
+    if (userRes.data && userRes.data.code === 200 && userRes.data.data) {
+      userInfo.value = {
+        ...userInfo.value,
+        ...userRes.data.data
+      }
+      saveUserInfoJson(JSON.stringify(userRes.data.data))
     }
 
     // 获取最新的邮箱信息

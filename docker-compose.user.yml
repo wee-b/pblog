@@ -1,0 +1,61 @@
+services:
+  pblog-user-api:
+    image: pblog-user-api:latest
+    build:
+      context: ./pblog-server
+      dockerfile: Dockerfile.user
+    container_name: pblog-user-api
+    restart: unless-stopped
+    networks:
+      - shared-runtime
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8085
+      JAVA_OPTS: >-
+        -XX:MaxRAMPercentage=70
+        -XX:InitialRAMPercentage=25
+        -XX:+UseG1GC
+      BIN_DATASOURCE_HOST: mysql
+      BIN_DATASOURCE_PORT: 3306
+      BIN_DATASOURCE_DATABASE: pblog
+      BIN_DATASOURCE_USERNAME: root
+      BIN_DATASOURCE_PASSWORD: "123"
+      BIN_REDIS_HOST: redis
+      BIN_REDIS_PORT: 6379
+      BIN_REDIS_DATABASE: 0
+      BIN_REDIS_PASSWORD: "123"
+      BIN_STORAGE_TYPE: minio
+      BIN_STORAGE_FILE_ACCESS_BASE_URL: http://192.168.0.101:8080/api/file
+      BIN_STORAGE_OSS_ENABLED: "false"
+      BIN_STORAGE_MINIO_ENABLED: "true"
+      BIN_STORAGE_MINIO_ENDPOINT: http://minio:9000
+      BIN_STORAGE_MINIO_PUBLIC_ENDPOINT: http://192.168.0.101:8080/minio
+      BIN_STORAGE_MINIO_ACCESS_KEY: root
+      BIN_STORAGE_MINIO_SECRET_KEY: "123456789"
+      BIN_STORAGE_MINIO_BUCKET_NAME: pblog
+      BIN_STORAGE_MINIO_PUBLIC_READ: "true"
+      BIN_VERIFICATION_EMAIL_CODE_ENABLED: "false"
+    mem_limit: 768m
+    cpus: 1.0
+
+  pblog-user-web:
+    image: pblog-user-web:latest
+    build:
+      context: ./pblog-user
+      dockerfile: Dockerfile
+    container_name: pblog-user-web
+    restart: unless-stopped
+    networks:
+      - shared-runtime
+    ports:
+      - "8080:80"
+    depends_on:
+      - pblog-user-api
+    mem_limit: 128m
+    cpus: 0.25
+
+networks:
+  shared-runtime:
+    external: true

@@ -172,8 +172,29 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // 允许的前端域名（生产环境需指定具体域名，不要用*）
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173","http://localhost:5174","http://localhost:5175"));
+        // 允许本地开发和局域网部署访问。allowCredentials=true 时不能使用 allowedOrigins("*")。
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                "http://192.168.*.*:*",
+                "http://10.*.*.*:*",
+                "http://172.16.*.*:*",
+                "http://172.17.*.*:*",
+                "http://172.18.*.*:*",
+                "http://172.19.*.*:*",
+                "http://172.20.*.*:*",
+                "http://172.21.*.*:*",
+                "http://172.22.*.*:*",
+                "http://172.23.*.*:*",
+                "http://172.24.*.*:*",
+                "http://172.25.*.*:*",
+                "http://172.26.*.*:*",
+                "http://172.27.*.*:*",
+                "http://172.28.*.*:*",
+                "http://172.29.*.*:*",
+                "http://172.30.*.*:*",
+                "http://172.31.*.*:*"
+        ));
         // 允许的请求方法
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // 允许的请求头

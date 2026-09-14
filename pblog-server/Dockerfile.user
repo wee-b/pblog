@@ -1,0 +1,9 @@
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+
+COPY pblog-user/target/pblog-user-1.0-SNAPSHOT.jar /app/app.jar
+
+EXPOSE 8085
+
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]

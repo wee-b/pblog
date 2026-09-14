@@ -257,6 +257,19 @@ const handleLogout = () => {
   $loginManager?.logout();
 };
 
+const refreshCurrentUserInfo = async () => {
+  if (!isLogin.value) return;
+  try {
+    const res = await UserApi.getUserInfo();
+    if (res.data?.code === 200 && res.data?.data) {
+      userInfo.value = res.data.data;
+      saveUserInfoJson(JSON.stringify(res.data.data));
+    }
+  } catch (error) {
+    console.warn('刷新用户信息失败', error);
+  }
+};
+
 // --- 登录管理器集成（原有逻辑优化）---
 const initLoginState = () => {
   if (!$loginManager) return;
@@ -303,6 +316,7 @@ const handlePopoverShow = () => {
   if ($loginManager) {
     isLogin.value = $loginManager.checkLogin();
     userInfo.value = $loginManager.getUserInfo() || {};
+    refreshCurrentUserInfo();
   }
 };
 
@@ -310,6 +324,7 @@ const handlePopoverShow = () => {
 let cleanupLoginListeners = null;
 onMounted(() => {
   cleanupLoginListeners = initLoginState(); // 初始化登录状态
+  refreshCurrentUserInfo();
   // 初始化图形验证码（避免首次打开弹窗时无验证码）
   if (isVisible.value && !loading.value) {
     handleRefreshCaptcha();
