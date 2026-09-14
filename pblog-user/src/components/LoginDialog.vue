@@ -23,11 +23,11 @@
 
         <form class="login-form" @submit.prevent="handleSubmit">
           <div class="form-item" v-if="loginType === 'account'">
-            <label>账号</label>
+            <label>账号或邮箱</label>
             <input
                 v-model.trim="passwordForm.username"
                 type="text"
-                placeholder="请输入账号"
+                placeholder="请输入账号或邮箱"
                 required
                 :disabled="loading"
             />
@@ -232,6 +232,10 @@ watch(isVisible, async (newVisible) => {
   if (newVisible && !loading.value) {
     try {
       emailVerificationEnabled.value = await getEmailVerificationEnabled();
+      if (!emailVerificationEnabled.value) {
+        emailForm.value.emailCode = '';
+        clearCountDownTimer();
+      }
     } catch (error) {
       console.error('读取邮箱验证码配置失败:', error);
       emailVerificationEnabled.value = true;
@@ -271,6 +275,11 @@ const handleRefreshCaptcha = async () => {
 
 // 发送验证码（核心优化）
 const handleSendEmailCode = async () => {
+  if (!emailVerificationEnabled.value) {
+    ElMessage.info('邮箱验证码功能已关闭');
+    return;
+  }
+
   // 双重防重复点击
   if (loading.value || isCountingDown.value) {
     console.log('阻止重复发送:', { loading: loading.value, counting: isCountingDown.value });
@@ -335,7 +344,7 @@ const handleSubmit = async () => {
 
   // 简单校验
   if (loginType.value === 'account') {
-    if (!currentForm.username) { ElMessage.warning('请输入账号'); valid = false; }
+    if (!currentForm.username) { ElMessage.warning('请输入账号或邮箱'); valid = false; }
     else if (!currentForm.password) { ElMessage.warning('请输入密码'); valid = false; }
   } else {
     if (!isEmailValid.value) { ElMessage.warning('请输入有效邮箱'); valid = false; }
@@ -358,12 +367,18 @@ const handleSubmit = async () => {
           captchaCode: currentForm.captchaCode,
           captchaUuid: currentForm.captchaUuid
         })
-        : await UserApi.emailCodeLogin({
-          email: emailForm.value.email,
-          code: emailForm.value.emailCode,
-          captchaCode: currentForm.captchaCode,
-          captchaUuid: currentForm.captchaUuid
-        });
+        : emailVerificationEnabled.value
+          ? await UserApi.emailCodeLogin({
+            email: emailForm.value.email,
+            code: emailForm.value.emailCode,
+            captchaCode: currentForm.captchaCode,
+            captchaUuid: currentForm.captchaUuid
+          })
+          : await UserApi.emailLoginWithoutCode({
+            email: emailForm.value.email,
+            captchaCode: currentForm.captchaCode,
+            captchaUuid: currentForm.captchaUuid
+          });
 
     const data = res.data;
     if (data.code === 200 && data.data.token && data.data.userInfoJson) {

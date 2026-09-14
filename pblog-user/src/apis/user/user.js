@@ -12,12 +12,19 @@ const UserApi = {
 
 
   emailCodeLogin: (params) => {
-    const reponse = http({
+    return http({
       url: '/user/emailLoginOrRegister',
       method: 'POST',
       data: params
     });
-    return reponse;
+  },
+
+  emailLoginWithoutCode: (params) => {
+    return http({
+      url: '/user/emailLoginOrRegisterWithoutCode',
+      method: 'POST',
+      data: params
+    });
   },
 
   logout: () => {

@@ -193,11 +193,11 @@ const fetchComments = async () => {
       commentList.value = res.data.data
       commentTree.value = buildCommentTree(commentList.value)
     } else {
-      ElMessage.error('获取评论失败：' + (res.data?.msg || '接口返回异常'))
+      ElMessage.error('获取评论失败：' + (res.data?.message || '接口返回异常'))
     }
   } catch (e) {
     console.error('获取评论接口异常：', e)
-    ElMessage.error('获取评论失败：网络异常')
+    ElMessage.error('获取评论失败：' + (e.response?.data?.message || '网络异常'))
   } finally {
     loading.value = false
   }
@@ -233,11 +233,11 @@ const handlePostComment = async () => {
       cancelReply() // 清空回复状态
       await fetchComments() // 重新加载评论
     } else {
-      ElMessage.error('发表评论失败：' + (res.data?.msg || '接口返回异常'))
+      ElMessage.error('发表评论失败：' + (res.data?.message || '接口返回异常'))
     }
   } catch (e) {
     console.error('发表评论接口异常：', e)
-    ElMessage.error('发表评论失败：网络异常')
+    ElMessage.error('发表评论失败：' + (e.response?.data?.message || '网络异常'))
   }
 }
 

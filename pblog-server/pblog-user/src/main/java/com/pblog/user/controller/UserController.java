@@ -6,6 +6,7 @@ import com.pblog.common.domain.dto.RegisterDTO;
 import com.pblog.common.domain.dto.ResetPasswordDTO;
 import com.pblog.common.domain.dto.UserDTO;
 import com.pblog.common.domain.dto.login.EmailCodeDTO;
+import com.pblog.common.domain.dto.login.EmailLoginWithoutCodeDTO;
 import com.pblog.common.domain.dto.login.PasswordLoginDTO;
 import com.pblog.common.domain.result.ResponseResult;
 import com.pblog.common.domain.vo.UserInfoVO;
@@ -44,6 +45,16 @@ public class UserController {
         log.info("收到邮箱验证码登录请求:{}", emailCodeDTO);
         Map<String,String> map =  userService.emailLoginOrRegister(emailCodeDTO);
         return ResponseResult.success(map);
+    }
+
+    /**
+     * 邮箱验证码关闭时使用的邮箱登录/注册接口。
+     */
+    @PostMapping("/emailLoginOrRegisterWithoutCode")
+    public ResponseResult<Map<String, String>> emailLoginOrRegisterWithoutCode(
+            @Valid @RequestBody EmailLoginWithoutCodeDTO emailLoginDTO) {
+        log.info("收到免邮箱验证码登录请求: {}", emailLoginDTO.getEmail());
+        return ResponseResult.success(userService.emailLoginOrRegisterWithoutCode(emailLoginDTO));
     }
 
 

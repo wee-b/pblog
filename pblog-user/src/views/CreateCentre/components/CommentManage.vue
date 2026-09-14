@@ -111,7 +111,7 @@ const handleDelete = async (id) => {
     }
   } catch (e) {
     console.error(e)
-    ElMessage.error("删除评论出现异常")
+    ElMessage.error(e.response?.data?.message || "删除评论出现异常")
   }
 }
 
@@ -146,7 +146,7 @@ const fetchComments = async () => {
     }
   } catch (e) {
     console.error(e)
-    ElMessage.error("获取评论列表网络异常")
+    ElMessage.error(e.response?.data?.message || "获取评论列表网络异常")
   } finally {
     isLoading.value = false
   }

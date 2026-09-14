@@ -10,6 +10,7 @@ import com.pblog.common.constant.RedisConstants;
 import com.pblog.common.constant.RoleConstant;
 import com.pblog.common.domain.dto.*;
 import com.pblog.common.domain.dto.login.EmailCodeDTO;
+import com.pblog.common.domain.dto.login.EmailLoginWithoutCodeDTO;
 import com.pblog.common.domain.dto.login.PasswordLoginDTO;
 import com.pblog.common.domain.entity.User;
 import com.pblog.common.domain.entity.rabc.PbUserRole;
@@ -87,8 +88,8 @@ public class UserServiceImpl implements UserService {
         }
 
 
-        // 1. 手动查询用户信息
-        LoginUser loginUser = QueryLoginUserByOneColumn("username", passwordLoginDTO.getUsername());
+        // 1. 支持使用账号或邮箱查询用户信息
+        LoginUser loginUser = queryLoginUserByUsernameOrEmail(passwordLoginDTO.getUsername());
 
         // 2. 手动校验密码（与 SecurityConfig 中配置的 PasswordEncoder 一致）
         if (!passwordEncoder.matches(passwordLoginDTO.getPassword(), loginUser.getPassword())) {
@@ -129,25 +130,44 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Map<String, String> emailLoginOrRegister(EmailCodeDTO emailCodeDTO) {
+        if (!emailVerificationProperties.isEnabled()) {
+            throw new BusinessException("邮箱验证码功能已关闭，请使用免验证码登录");
+        }
 
-        // 0.校验图片验证码（核心逻辑，复用 codeService）
-        boolean captchaValid = codeService.verifyCaptcha(
+        verifyCaptcha(
                 emailCodeDTO.getCaptchaUuid(),
                 emailCodeDTO.getCaptchaCode()
         );
-        if (!captchaValid) {
-            throw new BusinessException("验证码错误或已过期"); // 自定义业务异常
+        codeService.verifyEmailCode(
+                RedisConstants.LOGIN_EmailCode_KEY + emailCodeDTO.getEmail(),
+                emailCodeDTO.getCode()
+        );
+
+        return completeEmailLoginOrRegister(emailCodeDTO.getEmail());
+    }
+
+    @Override
+    public Map<String, String> emailLoginOrRegisterWithoutCode(EmailLoginWithoutCodeDTO emailLoginDTO) {
+        if (emailVerificationProperties.isEnabled()) {
+            throw new BusinessException("邮箱验证码功能已开启，请先完成邮箱验证");
         }
 
-        verifyEmailCodeIfEnabled(emailCodeDTO.getEmail(), emailCodeDTO.getCode());
+        verifyCaptcha(
+                emailLoginDTO.getCaptchaUuid(),
+                emailLoginDTO.getCaptchaCode()
+        );
 
+        return completeEmailLoginOrRegister(emailLoginDTO.getEmail());
+    }
+
+    private Map<String, String> completeEmailLoginOrRegister(String email) {
         // 1.检查用户是否存在
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("email", emailCodeDTO.getEmail());
+        queryWrapper.eq("email", email);
         User user = userMapper.selectOne(queryWrapper);
         if (user == null) {
             // 用户不存在自动注册
-            user = emailRegister(emailCodeDTO.getEmail());
+            user = emailRegister(email);
         }
         // 查询权限信息
         List<String> lis = userRoleMapper.selectRoleKeysByUserId(user.getId());
@@ -179,6 +199,13 @@ public class UserServiceImpl implements UserService {
         stringRedisTemplate.opsForValue().set(RedisConstants.LOGIN_TOKEN_KEY + userId, token);
 
         return map;
+    }
+
+    private void verifyCaptcha(String captchaUuid, String captchaCode) {
+        boolean captchaValid = codeService.verifyCaptcha(captchaUuid, captchaCode);
+        if (!captchaValid) {
+            throw new BusinessException("图形验证码错误或已过期");
+        }
     }
 
     private @NotNull User emailRegister(String email ) {
@@ -531,6 +558,25 @@ public class UserServiceImpl implements UserService {
         // 查询权限信息
         List<String> lis = userRoleMapper.selectRoleKeysByUserId(user.getId());
         return new LoginUser(user,lis);
+    }
+
+    private LoginUser queryLoginUserByUsernameOrEmail(String account) throws BusinessException {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.and(wrapper -> wrapper
+                .eq("username", account)
+                .or()
+                .eq("email", account));
+
+        User user = userMapper.selectOne(queryWrapper);
+        if (user == null || "1".equals(user.getDelFlag())) {
+            throw new BusinessException("用户不存在，请检查账号或邮箱");
+        }
+        if ("1".equals(user.getStatus())) {
+            throw new DisabledException("账号已被禁用");
+        }
+
+        List<String> roleKeys = userRoleMapper.selectRoleKeysByUserId(user.getId());
+        return new LoginUser(user, roleKeys);
     }
 
 

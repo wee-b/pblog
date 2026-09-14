@@ -232,10 +232,10 @@ DROP TABLE IF EXISTS `pb_comment`;
 CREATE TABLE `pb_comment` (
     `id` int NOT NULL AUTO_INCREMENT COMMENT '评论ID，主键',
     `article_id` int NOT NULL COMMENT '文章ID（关联pb_article）文章id=0代表为留言板数据',
-    `username` int NOT NULL COMMENT '评论用户账号(10位)',
+    `username` varchar(50) NOT NULL COMMENT '评论用户账号',
     `root_id`int NOT NULL COMMENT '评论根目录 0为根目录',
     `parent_id` int DEFAULT NULL COMMENT '父评论ID，0为根目录，最多支持两级评论',
-    `to_reply_username` int DEFAULT NULL COMMENT '被回复人账号(10位)',
+    `to_reply_username` varchar(50) DEFAULT NULL COMMENT '被回复人账号',
     `content` varchar(1000) NOT NULL COMMENT '评论内容',
     `status` char(1) NOT NULL DEFAULT '0' COMMENT '评论状态（0待审核 1已通过 2已驳回）',
     `like_count` int(11) NOT NULL DEFAULT '0' COMMENT '点赞数',

@@ -114,8 +114,8 @@ public class CommentController {
      */
     @DeleteMapping("/delete/{id}")
     public ResponseResult<String> deleteById(@PathVariable("id") Integer id) {
-    	commentService.removeById(id);
-    	log.info("commentService.removeById({})",id);
+        commentService.deleteOwned(id);
+        log.info("commentService.deleteOwned({})", id);
         return ResponseResult.success();
     }
 }

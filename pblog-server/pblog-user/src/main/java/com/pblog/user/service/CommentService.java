@@ -27,6 +27,8 @@ public interface CommentService extends IService<Comment> {
 
     Integer insert(CommentDTO commentdto);
 
+    boolean deleteOwned(Integer id);
+
     boolean update(Integer id ,CommentDTO commentdto);
 }
 

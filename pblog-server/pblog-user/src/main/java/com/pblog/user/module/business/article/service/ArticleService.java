@@ -18,9 +18,13 @@ public interface ArticleService extends IService<Article> {
 
     PageResult pageQuery(ArticlePageQueryDTO pageQueryDTO);
 
+    PageResult pageQueryMine(ArticlePageQueryDTO pageQueryDTO);
+
     Integer insert(ArticleDTO articledto,String url);
 
     boolean update(updateArticleDTO articledto);
+
+    boolean deleteOwned(Integer id);
 
     boolean status(Integer id);
 

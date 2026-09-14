@@ -1,5 +1,6 @@
 package com.pblog.common.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -22,7 +23,8 @@ public class CommentDTO {
     private Integer parentId;
 
 
-    private String toReplayUsername;
+    @JsonAlias("toReplayUsername")
+    private String toReplyUsername;
 
     /**
      * 评论内容

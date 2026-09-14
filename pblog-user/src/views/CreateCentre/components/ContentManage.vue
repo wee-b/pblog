@@ -206,7 +206,7 @@ import {useRouter} from "vue-router";
 import {
   deleteArticleById,
   enableDisableArticle,
-  pageQueryArticles
+  pageQueryMyArticles
 } from '@/apis/article/article.js'
 
 // --- 常量定义 ---
@@ -245,16 +245,18 @@ const getList = async () => {
   loading.value = true
   try {
     // 实际项目中可能需要处理空字符串或特定参数
-    const res = await pageQueryArticles(queryParams)
+    const res = await pageQueryMyArticles(queryParams)
     // 适配后端返回结构，假设是 res.data.data 或 res.data
     const data = res.data?.data || res.data
     if (res.data?.code === 200 || res.code === 200) {
       tableData.value = data.records || []
       total.value = parseInt(data.total || 0)
+    } else {
+      ElMessage.error(res.data?.message || '数据加载失败')
     }
   } catch (error) {
     console.error(error)
-    ElMessage.error('数据加载失败')
+    ElMessage.error(error.response?.data?.message || '数据加载失败')
   } finally {
     loading.value = false
   }

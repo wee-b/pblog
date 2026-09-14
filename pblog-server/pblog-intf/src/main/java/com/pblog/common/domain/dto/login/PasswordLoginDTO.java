@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PasswordLoginDTO {
+    // 账号或邮箱，保留 username 字段名以兼容现有客户端。
     private String username;
     private String password;
     // 图形验证码相关

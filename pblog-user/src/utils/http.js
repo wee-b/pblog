@@ -15,6 +15,7 @@ const NO_TOKEN_WHITE_LIST = [
     "/api/hello",
     "/api/user/passwordLogin",
     "/api/user/emailLoginOrRegister",
+    "/api/user/emailLoginOrRegisterWithoutCode",
     "/api/user/getUserInfoByUserName/**",
     "/api/code/email/sendEmail",
     "/api/code/email/enabled",

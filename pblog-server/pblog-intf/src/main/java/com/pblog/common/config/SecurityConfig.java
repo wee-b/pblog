@@ -86,6 +86,7 @@ public class SecurityConfig {
                     "/hello",
                     "/user/passwordLogin",
                     "/user/emailLoginOrRegister",
+                    "/user/emailLoginOrRegisterWithoutCode",
                     "/user/getUserInfoByUserName/**",
                     "/code/email/sendEmail",
                     "/code/email/enabled",
@@ -121,7 +122,18 @@ public class SecurityConfig {
                         "/user/deleteAccount",
                         "/file/uploadAvatar",
                         "user/getEmail",
-                        "like/**"
+                        "like/**",
+                        "/article/my/pageQuery",
+                        "/article/insert",
+                        "/article/insertDraft",
+                        "/article/update",
+                        "/article/delete/**",
+                        "/article/status/**",
+                        "/file/uploadImage",
+                        "/comment/insert",
+                        "/comment/fromMe",
+                        "/comment/forMe",
+                        "/comment/delete/**"
                 ).hasRole("USER")
 
                 // 管理员权限（ROLE_AUDITOR 或 ROLE_SUPER）

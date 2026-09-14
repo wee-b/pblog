@@ -1,6 +1,7 @@
 package com.pblog.user.controller;
 
 import cn.hutool.captcha.LineCaptcha;
+import com.pblog.common.Expection.BusinessException;
 import com.pblog.common.constant.RedisConstants;
 import com.pblog.common.config.EmailVerificationProperties;
 import com.pblog.common.domain.result.ResponseResult;
@@ -41,6 +42,10 @@ public class CodeController {
      */
     @GetMapping("/email/sendEmail")
     public ResponseResult sendSimpleMail(@RequestParam(value = "receiveEmail") String receiveEmail) {
+        if (!emailVerificationProperties.isEnabled()) {
+            throw new BusinessException("邮箱验证码功能已关闭");
+        }
+
         // 检查验证码是否发送过
         if(codeService.verifyEmailCode(receiveEmail) != null){
             return ResponseResult.success("验证码已发送，请勿重复发送");

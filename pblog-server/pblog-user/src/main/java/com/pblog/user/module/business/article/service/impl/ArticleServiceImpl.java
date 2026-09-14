@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pblog.common.constant.DefaultConstants;
 import com.pblog.common.constant.TypeConstant;
+import com.pblog.common.Expection.BusinessException;
 import com.pblog.common.domain.dto.Article.ArticleDTO;
 import com.pblog.common.domain.dto.Article.ArticlePageQueryDTO;
 import com.pblog.common.domain.dto.Article.updateArticleDTO;
@@ -93,6 +94,16 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         );
     }
 
+    @Override
+    public PageResult pageQueryMine(ArticlePageQueryDTO pageQueryDTO) {
+        if (pageQueryDTO == null) {
+            pageQueryDTO = new ArticlePageQueryDTO();
+        }
+        // 用户名只取认证上下文，不能信任前端参数。
+        pageQueryDTO.setUsername(SecurityContextUtil.getUsername());
+        return pageQuery(pageQueryDTO);
+    }
+
     /**
      * 保存草稿、发布文章
      */
@@ -155,9 +166,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     @Override
     public boolean update(updateArticleDTO articledto) {
 
+        requireOwnedArticle(articledto.getId());
+
         LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
         // 可调整
         updateWrapper.eq(Article::getId, articledto.getId())
+                .eq(Article::getAuthorUsername, SecurityContextUtil.getUsername())
                 .set(Article::getTitle, articledto.getTitle())
                 .set(Article::getContent, articledto.getContent())
                 .set(Article::getSummary, articledto.getSummary())
@@ -196,7 +210,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public boolean status(Integer id) {
 
         String status = "";
-        Article one = articleMapper.selectById(id);
+        Article one = requireOwnedArticle(id);
 
         if(one.getStatus().equals(DefaultConstants.Already_handout)){
             // 已发布-->草稿  （下架）
@@ -211,6 +225,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         LambdaUpdateWrapper<Article> updateWrapper = new LambdaUpdateWrapper<>();
         // 更新条件：根据 id 定位（必须，否则会更新所有数据！）
         updateWrapper.eq(Article::getId, one.getId())
+                .eq(Article::getAuthorUsername, SecurityContextUtil.getUsername())
                 .set(Article::getStatus,status);
         if (DefaultConstants.Already_handout.equals(status)) {
             updateWrapper.set(Article::getPublishedAt, LocalDateTime.now());
@@ -218,6 +233,26 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         int rows = articleMapper.update(null, updateWrapper);
         return rows > 0;
+    }
+
+    @Override
+    public boolean deleteOwned(Integer id) {
+        requireOwnedArticle(id);
+        LambdaQueryWrapper<Article> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Article::getId, id)
+                .eq(Article::getAuthorUsername, SecurityContextUtil.getUsername());
+        return articleMapper.delete(wrapper) > 0;
+    }
+
+    private Article requireOwnedArticle(Integer id) {
+        Article article = articleMapper.selectById(id);
+        if (article == null) {
+            throw new BusinessException("文章不存在");
+        }
+        if (!SecurityContextUtil.getUsername().equals(article.getAuthorUsername())) {
+            throw new BusinessException("无权操作其他用户的文章");
+        }
+        return article;
     }
 
     @Override

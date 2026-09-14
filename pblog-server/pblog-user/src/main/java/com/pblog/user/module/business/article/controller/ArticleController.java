@@ -39,6 +39,15 @@ public class ArticleController {
     }
 
     /**
+     * 个人中心分页查询当前登录用户自己的文章。
+     */
+    @PostMapping("/article/my/pageQuery")
+    public ResponseResult<PageResult> pageQueryMine(@Valid @RequestBody ArticlePageQueryDTO pageQueryDTO) {
+        PageResult pageResult = articleService.pageQueryMine(pageQueryDTO);
+        return ResponseResult.success(pageResult);
+    }
+
+    /**
      * 通过主键查询单条数据
      */
     @GetMapping("/article/queryById/{id}")
@@ -84,7 +93,7 @@ public class ArticleController {
     @DeleteMapping("/article/delete/{id}")
     public ResponseResult<String> deleteById(@PathVariable("id") Integer id) {
         log.info("收到请求：/article/delete，参数{}", id);
-        boolean success = articleService.removeById(id); // MP 内置方法
+        boolean success = articleService.deleteOwned(id);
         return ResponseResult.success(success?"删除成功":"删除失败") ;
     }
 

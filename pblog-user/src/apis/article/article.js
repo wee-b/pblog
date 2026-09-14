@@ -16,6 +16,15 @@ export function pageQueryArticles(data) {
     })
 }
 
+// 个人中心：只查询当前登录用户自己的文章
+export function pageQueryMyArticles(data) {
+    return request({
+        url: '/article/my/pageQuery',
+        method: 'post',
+        data:data
+    })
+}
+
 export function getArticleDetail(id) {
     const integerId = Number.isInteger(id) ? id : parseInt(id, 10);
     return request({

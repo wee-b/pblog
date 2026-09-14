@@ -30,8 +30,10 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             "/hello",
             "/user/passwordLogin",
             "/user/emailLoginOrRegister",
+            "/user/emailLoginOrRegisterWithoutCode",
             "/user/getUserInfoByUserName/**",
             "/code/email/sendEmail",
+            "/code/email/enabled",
             "/code/picture/generate",
 
             "/admin/passwordLogin",

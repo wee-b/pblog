@@ -80,11 +80,11 @@
 
         <form class="login-form" @submit.prevent="handleSubmit">
           <div class="form-item" v-if="loginType === 'account'">
-            <label>账号</label>
+            <label>账号或邮箱</label>
             <input
                 v-model.trim="passwordForm.username"
                 type="text"
-                placeholder="请输入账号"
+                placeholder="请输入账号或邮箱"
                 required
                 :disabled="loading"
             />
@@ -113,7 +113,7 @@
           </div>
 
           <!-- 邮箱验证码模块 -->
-          <div class="form-item" v-if="loginType === 'email'">
+          <div class="form-item" v-if="loginType === 'email' && emailVerificationEnabled">
             <label>邮箱验证码</label>
             <div class="verify-code-container">
               <input
@@ -186,7 +186,7 @@
             <button
                 type="submit"
                 class="login-btn solo-btn"
-                :disabled="loading || !emailForm.emailCode || !emailForm.captchaUuid"
+                :disabled="loading || (emailVerificationEnabled && !emailForm.emailCode) || !emailForm.captchaUuid"
             >
               登录/注册
             </button>
@@ -200,7 +200,7 @@
 <script setup>
 import { ref, watch, onUnmounted, onDeactivated, computed, getCurrentInstance, onMounted } from 'vue'; // 🔧 修改：新增onMounted
 import UserApi from '@/apis/user/user.js';
-import { refreshCaptcha, sendEmailCode } from '@/apis/code.js';
+import { getEmailVerificationEnabled, refreshCaptcha, sendEmailCode } from '@/apis/code.js';
 import {
   registerLoginDialog,
   handleLoginSuccess,
@@ -330,6 +330,7 @@ onUnmounted(() => {
 const isVisible = ref(false);
 const loading = ref(false);
 const loginType = ref('account');
+const emailVerificationEnabled = ref(true);
 const passwordForm = ref({ username: '', password: '', captchaUuid: '', captchaCode: '' });
 const emailForm = ref({ email: '', emailCode: '', captchaUuid: '', captchaCode: '' });
 const codeBlobUrl = ref('');
@@ -408,6 +409,17 @@ const switchLoginType = (type) => {
 watch(isVisible, async (newVisible) => {
   console.log('弹窗显示状态:', newVisible);
   if (newVisible && !loading.value) {
+    try {
+      emailVerificationEnabled.value = await getEmailVerificationEnabled();
+      if (!emailVerificationEnabled.value) {
+        emailForm.value.emailCode = '';
+        clearCountDownTimer();
+      }
+    } catch (error) {
+      console.error('读取邮箱验证码配置失败:', error);
+      // 配置读取失败时保持需要验证码，避免意外绕过校验。
+      emailVerificationEnabled.value = true;
+    }
     await handleRefreshCaptcha();
   }
 });
@@ -437,6 +449,11 @@ const handleRefreshCaptcha = async () => {
 
 // 发送验证码（核心优化）
 const handleSendEmailCode = async () => {
+  if (!emailVerificationEnabled.value) {
+    ElMessage.info('邮箱验证码功能已关闭');
+    return;
+  }
+
   // 双重防重复点击
   if (loading.value || isCountingDown.value) {
     console.log('阻止重复发送:', { loading: loading.value, counting: isCountingDown.value });
@@ -501,11 +518,14 @@ const handleSubmit = async () => {
 
   // 简单校验
   if (loginType.value === 'account') {
-    if (!currentForm.username) { ElMessage.warning('请输入账号'); valid = false; }
+    if (!currentForm.username) { ElMessage.warning('请输入账号或邮箱'); valid = false; }
     else if (!currentForm.password) { ElMessage.warning('请输入密码'); valid = false; }
   } else {
     if (!isEmailValid.value) { ElMessage.warning('请输入有效邮箱'); valid = false; }
-    else if (!emailForm.value.emailCode) { ElMessage.warning('请输入邮箱验证码'); valid = false; }
+    else if (emailVerificationEnabled.value && !emailForm.value.emailCode) {
+      ElMessage.warning('请输入邮箱验证码');
+      valid = false;
+    }
   }
 
   if (!currentForm.captchaCode) { ElMessage.warning('请输入图形验证码'); valid = false; }
@@ -521,12 +541,18 @@ const handleSubmit = async () => {
           captchaCode: currentForm.captchaCode,
           captchaUuid: currentForm.captchaUuid
         })
-        : await UserApi.emailCodeLogin({
-          email: emailForm.value.email,
-          code: emailForm.value.emailCode,
-          captchaCode: currentForm.captchaCode,
-          captchaUuid: currentForm.captchaUuid
-        });
+        : emailVerificationEnabled.value
+          ? await UserApi.emailCodeLogin({
+            email: emailForm.value.email,
+            code: emailForm.value.emailCode,
+            captchaCode: currentForm.captchaCode,
+            captchaUuid: currentForm.captchaUuid
+          })
+          : await UserApi.emailLoginWithoutCode({
+            email: emailForm.value.email,
+            captchaCode: currentForm.captchaCode,
+            captchaUuid: currentForm.captchaUuid
+          });
     const data = res.data
     if (data.code === 200 && data.data.token && data.data.userInfoJson) {
       saveToken(data.data.token)

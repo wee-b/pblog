@@ -1,9 +1,11 @@
 package com.pblog.user.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.pblog.common.constant.DefaultConstants;
+import com.pblog.common.Expection.BusinessException;
 import com.pblog.common.domain.dto.CommentDTO;
 import com.pblog.common.domain.dto.PageQueryDTO;
 import com.pblog.common.domain.result.PageResult;
@@ -117,6 +119,23 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             throw new RuntimeException("新增失败");
         }
         return comment.getId();
+    }
+
+    @Override
+    public boolean deleteOwned(Integer id) {
+        Comment comment = commentMapper.selectById(id);
+        if (comment == null) {
+            throw new BusinessException("评论不存在");
+        }
+
+        String username = SecurityContextUtil.getUsername();
+        if (!username.equals(comment.getUsername())) {
+            throw new BusinessException("只能删除自己发布的评论");
+        }
+
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Comment::getId, id).eq(Comment::getUsername, username);
+        return commentMapper.delete(wrapper) > 0;
     }
 
     @Override

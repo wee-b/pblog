@@ -7,6 +7,7 @@ import com.pblog.common.domain.dto.RegisterDTO;
 import com.pblog.common.domain.dto.ResetPasswordDTO;
 import com.pblog.common.domain.dto.UserDTO;
 import com.pblog.common.domain.dto.login.EmailCodeDTO;
+import com.pblog.common.domain.dto.login.EmailLoginWithoutCodeDTO;
 import com.pblog.common.domain.dto.login.PasswordLoginDTO;
 import com.pblog.common.domain.vo.UserInfoVO;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,6 +21,8 @@ public interface UserService {
     Map<String, String> emailLogin(EmailLoginDTO emailLoginDTO);
 
     Map<String, String> emailLoginOrRegister(EmailCodeDTO emailCodeLoginDTO);
+
+    Map<String, String> emailLoginOrRegisterWithoutCode(EmailLoginWithoutCodeDTO emailLoginDTO);
 
     String register(RegisterDTO registerDTO);
 
